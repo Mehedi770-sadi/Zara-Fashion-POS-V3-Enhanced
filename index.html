@@ -41,13 +41,51 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px so
 @media(max-width:420px){.gridcards{grid-template-columns:1fr 1fr}.main-menu-grid button{font-size:13px;min-height:52px}}
 :root{--ui-font-size:15px;--table-font-size:14px} table{font-size:var(--table-font-size)}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-const SUPABASE_URL='https://dimbsgkzisdllpzxxbll.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY='sb_publishable_0KwHy65b0OF4aPiq7IqftQ_8b6jS1x6';
-const zaraSupabase=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY):null;
-async function supabaseLoginV4(email,password){if(!zaraSupabase)return{ok:false,error:'Supabase library could not load.'};const {data,error}=await zaraSupabase.auth.signInWithPassword({email,password});if(error)return{ok:false,error:error.message};return{ok:!!data?.user,user:data?.user||null};}
+/* New Zara Fashion POS V4 — hosted Supabase authentication */
+const SUPABASE_URL = 'https://dimbsgkzisdllpzxxbll.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_0KwHy65b0OF4aPiq7IqftQ_8b6jS1x6';
+let zaraSupabase = null;
+
+try {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    zaraSupabase = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      }
+    );
+  }
+} catch (e) {
+  console.error('Supabase init:', e);
+}
+
+async function zaraSupabaseLogin(email, password) {
+  if (!zaraSupabase) return {ok:false, error:'Supabase client failed to initialize.'};
+  try {
+    const r = await zaraSupabase.auth.signInWithPassword({
+      email: String(email).trim(),
+      password: String(password)
+    });
+    if (r.error) return {ok:false, error:r.error.message};
+    return {ok:!!r.data?.user, user:r.data?.user || null};
+  } catch (e) {
+    return {ok:false, error:e?.message || String(e)};
+  }
+}
+
+async function zaraSupabaseLogout() {
+  try { if (zaraSupabase) await zaraSupabase.auth.signOut(); } catch(e) {}
+}
 </script>
+
 </head>
 <body>
 
@@ -59,17 +97,7 @@ async function supabaseLoginV4(email,password){if(!zaraSupabase)return{ok:false,
     <label>Password</label><input id="loginPass" type="password" autocomplete="current-password">
     <button onclick="doLogin()">Login</button>
     <div id="loginMsg" class="loginmsg"></div>
-    <div id="connectionHint" class="muted" style="text-align:center">
-Login with your Supabase email and password
-</div>
-<script>
-(function(){
-  const hint=document.getElementById('connectionHint');
-  if(hint && (location.protocol==='file:' || location.protocol==='content:')){
-    hint.innerHTML='For Supabase Login, open this V4 from GitHub Pages/HTTPS (not directly from Downloads).';
-  }
-})();
-</script>
+    <div class="muted" style="text-align:center">Admin: admin / admin123 &nbsp; Staff: staff / staff123</div>
   </div>
 </div>
 
@@ -198,7 +226,7 @@ Login with your Supabase email and password
 <div id="backupInfo" style="margin-top:12px"></div></div></section>
 <section id="settings" class="page"><h2>Settings</h2><div class="panel"><div class="formgrid"><div><label>Shop Name</label><input id="shopName" value="New Zara Fashion"></div><div><label>Phone</label><input id="shopPhone" value=""></div><div><label>Address</label><input id="shopAddress" value=""></div><div><label>Billing Paper</label><select id="paperSize"><option value="80">80mm</option><option value="58">58mm</option></select></div></div><div class="formgrid" style="margin-top:10px"><div><label>Primary Color</label><input id="primaryColor" type="color" value="#1677e8"></div><div><label>Menu Font Size</label><select id="menuFontSize"><option value="13">13px</option><option value="15" selected>15px</option><option value="17">17px</option><option value="19">19px</option><option value="21">21px</option></select></div><div><label>POS / Form Font Size</label><select id="uiFontSize"><option value="13">13px</option><option value="15" selected>15px</option><option value="17">17px</option><option value="19">19px</option><option value="21">21px</option></select></div><div><label>Table Font Size</label><select id="tableFontSize"><option value="12">12px</option><option value="14" selected>14px</option><option value="16">16px</option><option value="18">18px</option><option value="20">20px</option></select></div></div><button class="btnblue" style="margin-top:10px" onclick="saveSettings()">Save Settings</button><hr><h3>Product Categories</h3><div class="row"><input id="settingsNewCat" placeholder="New product category"><button class="btnblue" onclick="addCategoryFromSettings()">+ Add Category</button></div><div id="settingsCategoryList" style="margin-top:10px"></div><hr><h3>Password</h3><div class="formgrid"><input id="oldPass" type="password" placeholder="Old password"><input id="newPass" type="password" placeholder="New password"><button class="btnblue" onclick="changePassword()">Change Password</button></div></div></section>
 </main></div>
-<div class="footer"><span>New Zara Fashion POS Software – V4.0</span><span>Barcode Roll: 2.25" × 1.25" • Billing: 80mm</span></div>
+<div class="footer"><span>New Zara Fashion POS Software – V3.0</span><span>Barcode Roll: 2.25" × 1.25" • Billing: 80mm</span></div>
 </div>
 <div id="printArea"></div>
 
@@ -221,13 +249,69 @@ function esc(x){return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 function money(n){return '৳ '+Number(n||0).toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function today(){return new Date().toISOString().slice(0,10)}
 function nowText(){return new Date().toLocaleString('en-GB')}
-async function doLogin(){try{db=loadDB();const email=(loginUserEl()?.value||'').trim(),password=loginPassEl()?.value||'';if(!email||!password){loginMsgEl().textContent='Email এবং Password দিন';return false}const result=await supabaseLoginV4(email,password);if(!result.ok){loginMsgEl().textContent=(result.error==='Failed to fetch' ? 'Connection failed. Open V4 from HTTPS/GitHub Pages and try again.' : 'Login failed: '+result.error);return false}const localUser=(db.users||[]).find(a=>String(a.u)===email);currentUser=localUser?{...localUser,email:result.user.email}:{u:email,role:'Administrator',email:result.user.email};loginEl().style.display='none';appEl().style.display='block';$('userRole').textContent=currentUser.role;$('userName').textContent=currentUser.u;init();showPage('dashboard');return true}catch(e){console.error(e);loginMsgEl().textContent='Login error: '+e.message;return false}}
+async function doLogin(){
+  const msg=document.getElementById('loginMsg');
+  try{
+    db=loadDB();
+    const email=(document.getElementById('loginUser')?.value||'').trim();
+    const password=document.getElementById('loginPass')?.value||'';
+    if(!email || !password){
+      if(msg) msg.textContent='Email এবং Password দিন';
+      return false;
+    }
+    if(!zaraSupabase){
+      if(msg) msg.textContent='Supabase connection unavailable. Please reload the HTTPS page.';
+      return false;
+    }
+    if(msg) msg.textContent='Logging in...';
+
+    const result=await zaraSupabaseLogin(email,password);
+    if(!result.ok){
+      if(msg) msg.textContent='Login failed: '+result.error;
+      return false;
+    }
+
+    const localUser=(db.users||[]).find(a=>String(a.u||'').toLowerCase()===email.toLowerCase());
+    currentUser=localUser
+      ? {...localUser,email:result.user.email}
+      : {u:result.user.email,role:'Administrator',email:result.user.email};
+
+    loginEl().style.display='none';
+    appEl().style.display='block';
+    const roleEl=document.getElementById('userRole');
+    const nameEl=document.getElementById('userName');
+    if(roleEl) roleEl.textContent=currentUser.role||'Administrator';
+    if(nameEl) nameEl.textContent=currentUser.u||currentUser.email;
+    init();
+    showPage('dashboard');
+    return true;
+  }catch(e){
+    console.error(e);
+    if(msg) msg.textContent='Login error: '+(e?.message||e);
+    return false;
+  }
+}
 function updateInvoicePreview(){let gross=cart.reduce((a,x)=>a+x.qty*x.price,0),dis=+saleDiscount.value||0,total=Math.max(0,gross-dis);invoicePreview.innerHTML=`<h3>${esc(db.settings.shop)}</h3><p>All Kinds of Ladies & Gents Item</p><p>${esc(db.settings.phone)}<br>${esc(db.settings.address)}</p><hr><div style="font-size:11px">Invoice: ${esc(invoiceNo?.value||'')}<br>Date: ${esc(invoiceDate?.value||'')}<br>Customer: ${esc(saleCustomer?.selectedOptions[0]?.text||'Walk-in Customer')}</div><hr><table><tr><th>Item</th><th>Qty</th><th>Total</th></tr>${cart.map(x=>`<tr><td>${esc(x.name)} (${esc(x.size)})</td><td>${x.qty}</td><td>${money(x.qty*x.price)}</td></tr>`).join('')}</table><hr><div class="sumrow"><span>Subtotal</span><b>${money(gross)}</b></div><div class="sumrow"><span>Discount</span><b>${money(dis)}</b></div><div class="sumrow grand"><span>Total</span><span>${money(total)}</span></div><hr><p>Paid By: ${esc(selectedPay)}</p><p>Thank You! Visit Again.</p>`}
 function completeSale(){if(!cart.length){alert('Cart খালি');return}for(let x of cart){let p=db.products.find(p=>p.code===x.code);if(!p||x.qty>p.stock){alert(x.name+' এর পর্যাপ্ত stock নেই');return}}let gross=cart.reduce((a,x)=>a+x.qty*x.price,0),dis=+saleDiscount.value||0,total=Math.max(0,gross-dis),profit=cart.reduce((a,x)=>a+x.qty*(x.price-x.cost),0)-dis;cart.forEach(x=>db.products.find(p=>p.code===x.code).stock-=x.qty);let s={invoice:invoiceNo.value,date:today(),dateText:invoiceDate.value,customer:saleCustomer.value||'',payment:selectedPay,total,profit,items:cart.map(x=>({code:x.code,name:x.name,size:x.size,color:x.color,qty:x.qty,price:x.price}))};db.sales.push(s);saveDB();printInvoice(s);cart=[];saleDiscount.value=0;newInvoice();renderAll()}
 function printInvoice(s){let items=s.items.map(x=>`<tr><td>${esc(x.name)}<br>${esc(x.size)} ${esc(x.color||'')}</td><td>${x.qty}</td><td>${money(x.qty*x.price)}</td></tr>`).join('');let total=s.total;printArea.innerHTML=`<div style="font-family:Arial;width:${db.settings.paper}mm;padding:4mm;background:white"><h2 style="text-align:center;margin:0">${esc(db.settings.shop)}</h2><div style="text-align:center;font-size:11px">${esc(db.settings.phone)}<br>${esc(db.settings.address)}</div><hr><div style="font-size:11px">Invoice: ${esc(s.invoice)}<br>Date: ${esc(s.dateText)}<br>Customer: ${esc(s.customer||'Walk-in Customer')}</div><hr><table style="width:100%;font-size:11px;border-collapse:collapse"><tr><th>Item</th><th>Qty</th><th>Total</th></tr>${items}</table><hr><div style="text-align:right;font-size:12px">Total Payable: <b>${money(total)}</b><br>Paid By: ${esc(s.payment)}</div><p style="text-align:center;font-size:11px">Thank You! Visit Again.</p></div>`;window.print();printArea.innerHTML=''}
 function printLabelFromForm(){let code=pCode.value.trim();if(!code){code=generateProductCode();pCode.value=code}let p=db.products.find(x=>x.code===code)||{code,name:pName.value||'Product',price:+pPrice.value||0,size:pSize.value||'',color:pColor.value||''};printLabels([p])}
 function printProductBarcode(code){let p=db.products.find(x=>x.code===code);if(!p){alert('Product পাওয়া যায়নি');return}printLabels([p])}
-function printLabels(arr){let labels=arr.map(p=>`<div class="label"><b>${esc(db.settings.shop)}</b><div>${esc(p.name)}</div><div>Price: ${money(p.price)}</div>${code128SVG(p.code)}<div style="font-weight:700">${esc(p.code)}</div></div>`).join('');let w=window.open('','_blank');w.document.write(`<html><head><title>Barcode Labels</title><style>@page{margin:4mm}.label{width:2.25in;height:1.25in;display:inline-flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border:1px solid #ddd;margin:2px;padding:5px;font-family:Arial;font-size:10px;vertical-align:top}.label svg{width:100%;height:45px}</style></head><body>${labels}<script>window.print()<\/script></body></html>`);w.document.close()}
+function printLabels(arr){let labels=arr.map(p=>`<div class="label"><b>${esc(db.settings.shop)}</b><div>${esc(p.name)}</div><div>Price: ${money(p.price)}</div>${code128SVG(p.code)}<div style="font-weight:700">${esc(p.code)}</div></div>`).join('');let w=window.open('','_blank');w.document.write(`<html><head><title>Barcode Labels</title><style>@page{margin:4mm}.label{width:2.25in;height:1.25in;display:inline-flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border:1px solid #ddd;margin:2px;padding:5px;font-family:Arial;font-size:10px;vertical-align:top}.label svg{width:100%;height:45px}</style></head><body>${labels}<script>window.print()<\/script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  const m=document.getElementById('loginMsg');
+  const box=document.querySelector('.loginbox');
+  if(box && (location.protocol==='file:' || location.protocol==='content:')){
+    const n=document.createElement('div');
+    n.className='muted';
+    n.style.cssText='text-align:center;margin-top:8px;color:#b45309';
+    n.textContent='Supabase Login requires the HTTPS GitHub Pages link.';
+    box.appendChild(n);
+  }
+});
+</script>
+
+</body></html>`);w.document.close()}
 function addPurchase(){let p=db.products.find(x=>x.code===buyCode.value.trim());if(!p){alert('Product code পাওয়া যায়নি');return}let q=+buyQty.value||0,c=+buyCost.value||p.cost;if(q<=0)return;p.stock+=q;p.cost=c;db.purchases.push({date:today(),code:p.code,name:p.name,qty:q,cost:c,supplier:buySupplier.value,total:q*c});saveDB();renderAll();alert('Stock added')}
 function renderPurchases(){purchaseTable.innerHTML=`<table><tr><th>Date</th><th>Barcode</th><th>Product</th><th>Qty</th><th>Cost</th><th>Supplier</th><th>Total</th></tr>${db.purchases.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${esc(x.code)}</td><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.cost)}</td><td>${esc(x.supplier)}</td><td>${money(x.total)}</td></tr>`).join('')}</table>`}
 function addCategory(){let n=(newCat?.value||prompt('Category name')||'').trim();if(!n)return;if(!db.categories.includes(n))db.categories.push(n);if(newCat)newCat.value='';saveDB();renderAll()}
