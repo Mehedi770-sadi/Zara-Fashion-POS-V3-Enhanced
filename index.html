@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="manifest.json">
+<title>New Zara Fashion POS V4</title>
+<style>
+:root{--navy:#09243a;--blue:#1677e8;--green:#159447;--red:#e53935;--yellow:#f4b400;--bg:#f4f7fb;--line:#dfe6ee}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans Bengali",sans-serif;background:var(--bg);color:#17202a}
+button,input,select{font:inherit}button{border:0;border-radius:7px;padding:10px 14px;cursor:pointer;font-weight:700}input,select{border:1px solid #cfd8e3;border-radius:7px;padding:10px;width:100%;background:#fff}label{display:block;font-size:12px;font-weight:700;margin:7px 0 5px}.hidden{display:none}
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#061a2a,#1668a5)}
+.loginbox{width:min(410px,92%);background:#fff;border-radius:18px;padding:30px;box-shadow:0 20px 70px #0006}.loginbox h1{margin:0;color:var(--navy);text-align:center}.loginbox p{text-align:center;color:#68727d}.loginbox button{width:100%;margin-top:14px;background:var(--blue);color:#fff}.loginmsg{height:22px;color:var(--red);text-align:center;margin-top:8px;font-size:13px}
+#app{display:none}.top{height:74px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:8px 16px;gap:12px;position:sticky;top:0;z-index:20}.brand{width:250px;background:var(--navy);color:#fff;align-self:stretch;display:flex;align-items:center;padding:0 16px;font-weight:800;font-size:20px}.brand small{display:block;color:#ffd500;font-size:13px;margin-top:3px}.topnav{display:flex;gap:7px;flex:1;overflow:auto;scrollbar-width:thin}.topnav button{background:#fff;border:1px solid #dfe5ec;color:#17202a;white-space:nowrap}.topnav button.active{background:var(--blue);color:#fff}.userbox{font-size:12px;text-align:right;min-width:140px}.userbox b{color:var(--blue)}.avatar{display:inline-flex;width:35px;height:35px;border-radius:50%;background:#e8f1ff;align-items:center;justify-content:center;margin-left:7px}
+.layout{display:flex;min-height:calc(100vh - 74px)}aside{width:205px;background:var(--navy);color:#fff;padding:12px 8px;flex-shrink:0}.section{font-size:10px;color:#9fb5c7;padding:12px 12px 4px;font-weight:800}aside button{display:block;width:100%;background:transparent;color:#eaf2f8;text-align:left;margin:2px 0;padding:10px 12px}aside button:hover,aside button.active{background:#1472d6;border-radius:6px}main{flex:1;padding:15px;min-width:0}.page{display:none}.page.active{display:block}h2{margin:4px 0 14px;color:var(--blue);font-size:20px}
+.gridcards{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px}.card{background:#fff;border-radius:10px;padding:14px;box-shadow:0 2px 8px #0000000b;border:1px solid #edf0f4}.card .big{font-size:23px;font-weight:800;margin-top:8px}.card.green{background:#eafff2}.card.yellow{background:#fff7df}.card.purple{background:#f2eaff}.card.blue{background:#eaf4ff}.card.red{background:#fff0f0}
+.panel{background:#fff;border:1px solid #e5eaf0;border-radius:10px;padding:14px;margin-top:12px;box-shadow:0 2px 8px #00000009}.two{display:grid;grid-template-columns:1.5fr 1fr;gap:12px}.three{display:grid;grid-template-columns:1.4fr .9fr 1fr;gap:12px}.formgrid{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:10px}.row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.row>div{flex:1;min-width:130px}.btnblue{background:var(--blue);color:#fff}.btngreen{background:var(--green);color:#fff}.btnred{background:var(--red);color:#fff}.btnyellow{background:#ffbf00;color:#1b1b1b}.btnlight{background:#fff;border:1px solid #d4dce5}.muted{color:#6c7782;font-size:12px}
+table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #edf0f3;text-align:left;font-size:12px}th{background:#f2f6fa;font-weight:800}.scroll{overflow:auto}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#eef2f6;font-size:11px}.low{background:#ffe2e2;color:#b71c1c}.ok{background:#e3f7ea;color:#117c38}
+#scan{font-size:17px;border:2px solid #62a6ff}.posleft{min-width:0}.posright{min-width:280px}.invoicePreview{border:1px solid #cfd5db;background:#fff;padding:12px;min-height:560px}.invoicePreview h3{text-align:center;margin:0 0 3px}.invoicePreview p{text-align:center;margin:2px;font-size:11px}.invoicePreview hr{border:0;border-top:1px dashed #777}.sumrow{display:flex;justify-content:space-between;padding:4px 0}.grand{font-size:20px;font-weight:800}
+.searchbox{margin-bottom:8px}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.kpi{font-size:11px;color:#68727d}.empty{text-align:center;padding:30px;color:#89939d}
+.barcodeBox{text-align:center;border:1px dashed #bbb;padding:8px;background:#fff}.barcodeBox svg{max-width:100%;height:60px}.label-preview{width:2.25in;height:1.25in;border:1px solid #ccc;padding:6px;text-align:center;margin:10px auto;background:#fff}.label-preview svg{width:100%;height:43px}.label-preview .lname{font-size:11px;font-weight:700}.label-preview .lprice{font-size:10px}.label-preview .lcode{font-size:10px;font-weight:700}
+.footer{background:var(--navy);color:#fff;padding:8px 14px;font-size:11px;display:flex;justify-content:space-between}
+@media(max-width:1100px){.gridcards{grid-template-columns:repeat(3,1fr)}.two,.three{grid-template-columns:1fr}.brand{width:190px}.formgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){aside{display:none}.top{height:auto;flex-wrap:wrap;padding:7px;position:sticky}.brand{width:100%;height:48px}.topnav{order:3;width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}.topnav button{width:100%;font-size:12px;padding:9px 6px}.userbox{position:absolute;right:8px;top:55px;font-size:11px}.gridcards{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:1fr}.two,.three{grid-template-columns:1fr}.posright{min-width:0}.panel{padding:10px}h2{font-size:18px}.scroll{overflow-x:auto}}
+@media print{body *{visibility:hidden!important}#printArea,#printArea *{visibility:visible!important}#printArea{position:absolute;left:0;top:0;width:80mm}}
+
+/* V3 Enhanced Update */
+.main-menu-grid{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.main-menu-grid button{min-height:58px;font-size:15px;font-weight:800;border:1px solid #d7e0ea;background:#fff;box-shadow:0 2px 7px #0000000b}
+.main-menu-grid button.active{background:var(--blue);color:#fff}
+.payment-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.payment-box{border:1px solid #dfe6ee;border-radius:8px;padding:10px;background:#f8fafc}
+.payment-box h4{margin:0 0 7px;color:var(--navy)}
+.change-box{background:#fff7df;border:1px solid #f1d47b;border-radius:8px;padding:10px;margin-top:8px}
+.workbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.work-status{font-weight:800;padding:8px 12px;border-radius:20px;background:#e3f7ea;color:#117c38}
+.work-status.closed{background:#ffe2e2;color:#b71c1c}
+.loginbox{position:relative;overflow:hidden}.login-watermark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.045;font-size:58px;font-weight:900;transform:rotate(-25deg);white-space:nowrap;color:#09243a}
+.exp-cat-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px}
+@media(max-width:720px){aside{display:block;width:100%;padding:8px;background:var(--navy);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.layout{display:block}.section{grid-column:1/-1;padding:8px 10px 2px}.topnav{display:none}.top{position:sticky;top:0}.main-menu-grid{grid-template-columns:repeat(2,1fr)}.payment-grid{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.gridcards{grid-template-columns:repeat(2,1fr)}main{padding:10px}.brand{font-size:18px}.userbox{font-size:11px}.posright{min-width:0}.posleft{width:100%}table{min-width:650px}.scroll{width:100%;overflow-x:auto}.footer{font-size:9px}}
+@media(max-width:420px){.gridcards{grid-template-columns:1fr 1fr}.main-menu-grid button{font-size:13px;min-height:52px}}
+:root{--ui-font-size:15px;--table-font-size:14px} table{font-size:var(--table-font-size)}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://dimbsgkzisdllpzxxbll.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_0KwHy65b0OF4aPiq7IqftQ_8b6jS1x6';
+const zaraSupabase=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY):null;
+async function supabaseLoginV4(email,password){if(!zaraSupabase)return{ok:false,error:'Supabase library could not load.'};const {data,error}=await zaraSupabase.auth.signInWithPassword({email,password});if(error)return{ok:false,error:error.message};return{ok:!!data?.user,user:data?.user||null};}
+</script>
+</head>
+<body>
+
+<div id="login">
+  <div class="loginbox"><div class="login-watermark">NEW ZARA FASHION</div>
+    <h1>NEW ZARA FASHION</h1>
+    <p>POS Software V4.0</p>
+    <label>Username</label><input id="loginUser" autocomplete="username">
+    <label>Password</label><input id="loginPass" type="password" autocomplete="current-password">
+    <button onclick="doLogin()">Login</button>
+    <div id="loginMsg" class="loginmsg"></div>
+    <div id="connectionHint" class="muted" style="text-align:center">
+Login with your Supabase email and password
+</div>
+<script>
+(function(){
+  const hint=document.getElementById('connectionHint');
+  if(hint && (location.protocol==='file:' || location.protocol==='content:')){
+    hint.innerHTML='For Supabase Login, open this V4 from GitHub Pages/HTTPS (not directly from Downloads).';
+  }
+})();
+</script>
+  </div>
+</div>
+
+<div id="app">
+<header class="top">
+  <div class="brand"><div>NEW ZARA FASHION<small>POS SOFTWARE • V4.0</small></div></div>
+  <div class="topnav">
+    <button id="top-dashboard" onclick="showPage('dashboard')">▣ Dashboard</button>
+    <button id="top-pos" onclick="showPage('pos')">🛒 POS (Sales)</button>
+    <button id="top-products" onclick="showPage('products')">▣ Products</button>
+    <button id="top-purchase" onclick="showPage('purchase')">▣ Purchase</button>
+    <button id="top-customers" onclick="showPage('customers')">♙ Customers</button>
+    <button id="top-reports" onclick="showPage('reports')">▥ Reports</button>
+    <button id="top-expenses" onclick="showPage('expenses')">৳ Expenses</button>
+    <button id="top-settings" onclick="showPage('settings')">⚙ Settings</button>
+  </div>
+  <div class="userbox"><b id="userRole"></b><br><span id="userName"></span><span class="avatar">●</span></div>
+</header>
+
+<div class="layout">
+<aside>
+ <div class="section">MAIN</div>
+ <button onclick="showPage('dashboard')" id="side-dashboard">⌂ Dashboard</button>
+ <button onclick="showPage('pos')" id="side-pos">🛒 POS (Sales)</button>
+ <button onclick="showPage('products')" id="side-products">▣ Products</button>
+ <button onclick="showPage('purchase')" id="side-purchase">🛒 Purchase</button>
+ <div class="section">MANAGEMENT</div>
+ <button onclick="showPage('categories')" id="side-categories">☷ Categories</button>
+ <button onclick="showPage('customers')" id="side-customers">♙ Customers</button>
+ <button onclick="showPage('suppliers')" id="side-suppliers">♙ Suppliers</button>
+ <div class="section">REPORTS</div>
+ <button onclick="showPage('reports')">▥ Sales Report</button>
+ <button onclick="showPage('purchaseReport')">▥ Purchase Report</button>
+ <button onclick="showPage('stockReport')">▥ Stock Report</button>
+ <button onclick="showPage('profitReport')">▥ Profit Report</button>
+ <div class="section">OTHERS</div>
+ <button onclick="showPage('expenses')" id="side-expenses">৳ Expenses</button>
+ <button onclick="showPage('backup')">⇅ Backup / Restore</button>
+ <button onclick="showPage('settings')">⚙ Settings</button>
+ <button onclick="logout()" style="color:#ff7d7d">↪ Logout</button>
+</aside>
+
+<main>
+<section id="dashboard" class="page active">
+<h2>Dashboard</h2>
+<div id="mainMenuGrid" class="main-menu-grid"></div>
+<div class="workbar"><span id="workStatus" class="work-status">Workday Closed</span><span class="muted" id="workDepositInfo"></span><button class="btngreen" onclick="openWorkday()">Open Workday</button><button class="btnred" onclick="closeWorkday()">Close Workday</button></div>
+<div class="gridcards">
+<div class="card green">Today's Sales<div class="big" id="kToday">৳ 0</div><div class="kpi" id="kTodayInv">0 Invoice</div></div>
+<div class="card blue">Cash Sales<div class="big" id="kCash">৳ 0</div></div>
+<div class="card purple">Card Sales<div class="big" id="kCard">৳ 0</div></div>
+<div class="card yellow">bKash Sales<div class="big" id="kBkash">৳ 0</div></div>
+<div class="card red">Expenses<div class="big" id="kExpenses">৳ 0</div></div>
+</div>
+<div class="panel"><h3>Sales Filter</h3><div class="formgrid"><div><label>From</label><input id="dashFrom" type="date"></div><div><label>To</label><input id="dashTo" type="date"></div><div><label>Payment</label><select id="dashPay"><option value="">All</option><option>Cash</option><option>Card</option><option>bKash</option><option>MTB</option><option>CITY</option><option>DBBL</option><option>UCB</option></select></div><div><label>&nbsp;</label><button class="btnblue" onclick="renderDashboard()">Show Sales</button></div></div><div id="dashSalesDetail" style="margin-top:10px"></div></div>
+<div class="three"><div class="panel"><h3>Categories <button class="btngreen" style="float:right;padding:6px 9px" onclick="addCategory()">+ Add Category</button></h3><div id="dashCats"></div></div><div class="panel"><h3>Low Stock Items</h3><div id="dashLow"></div></div><div class="panel"><h3>Workday Deposit</h3><div id="dashDepositHistory"></div></div></div>
+<div class="panel"><h3>Recent Sales</h3><div id="recentSales"></div></div>
+</section>
+
+<section id="pos" class="page">
+<h2>POS (Sales)</h2>
+<div class="two">
+<div class="posleft">
+<div class="panel">
+<label>Scan Barcode / Search Product</label>
+<input id="scan" placeholder="Scan barcode or type product code" onkeydown="scanEnter(event)" autofocus>
+<!-- Product details are intentionally hidden in POS Sale; barcode/code search remains available. -->
+</div>
+<div class="panel"><h3>Invoice Items</h3><div class="scroll"><table><thead><tr><th>SL</th><th>Product Name</th><th>Size</th><th>Color</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr></thead><tbody id="cartBody"></tbody></table></div>
+<div class="actions"><button class="btnblue" onclick="addManual()">+ Add Item</button><button class="btnred" onclick="removeSelected()">Remove Selected</button><button class="btnyellow" onclick="clearCart()">Clear All</button></div></div>
+</div>
+<div class="posright">
+<div class="panel"><h3>Invoice Info</h3><div class="formgrid">
+<div><label>Invoice No</label><input id="invoiceNo" readonly></div><div><label>Date</label><input id="invoiceDate" readonly></div>
+<div><label>Customer Name</label><input id="saleCustomerName" placeholder="Customer name"></div><div><label>Mobile</label><input id="saleCustomerPhone" placeholder="01XXXXXXXXX"></div><div style="grid-column:span 2"><label>Saved Customer</label><select id="saleCustomer"><option value="">Walk-in Customer</option></select></div></div></div>
+<div class="panel"><h3>Payment & Discount</h3>
+<div class="formgrid"><div><label>Discount Type</label><select id="discountType" onchange="renderCart()"><option value="tk">Tk</option><option value="percent">%</option></select></div><div><label>Discount</label><input id="saleDiscount" type="number" min="0" value="0" oninput="renderCart()"></div></div>
+<div class="payment-grid" style="margin-top:8px">
+<div class="payment-box"><h4>Cash</h4><input id="payCash" type="number" min="0" value="0" oninput="updatePaymentSummary()"><small>Customer paid cash</small></div>
+<div class="payment-box"><h4>Card / Bank</h4><select id="payCardMethod"><option value="Card">Card</option><option>MTB</option><option>CITY</option><option>DBBL</option><option>UCB</option></select><input id="payCard" type="number" min="0" value="0" oninput="updatePaymentSummary()"></div>
+<div class="payment-box"><h4>bKash</h4><input id="payBkash" type="number" min="0" value="0" oninput="updatePaymentSummary()"></div></div>
+<div class="change-box"><div>Payable: <b>৳ <span id="payable">0.00</span></b></div><div>Total Received: <b>৳ <span id="receivedTotal">0.00</span></b></div><div>Change / ফেরত: <b>৳ <span id="changeAmount">0.00</span></b></div><div id="paymentHint" class="muted"></div></div>
+<h2 style="color:var(--green);font-size:25px">৳ <span id="payableBig">0.00</span></h2>
+<button class="btngreen" style="width:100%" onclick="completeSale()">Complete Sale & Print</button></div>
+<div class="panel invoicePreview" id="invoicePreview"></div>
+</div>
+</div>
+</section>
+
+<section id="products" class="page">
+<h2>Products / Inventory</h2>
+<div class="panel">
+<div class="formgrid">
+<div><label>Barcode / Product Code</label><input id="pCode" placeholder="Leave blank for Auto Barcode"></div>
+<div><label>Product Name</label><input id="pName"></div>
+<div><label>Category</label><select id="pCat"></select></div>
+<div><label>Size</label><select id="pSize"><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>Free</option></select></div>
+<div><label>Color</label><input id="pColor"></div><div><label>Purchase Price</label><input id="pCost" type="number"></div>
+<div><label>Sale Price</label><input id="pPrice" type="number"></div><div><label>Stock Qty</label><input id="pStock" type="number"></div>
+<div><label>Reorder Level</label><input id="pReorder" type="number" value="3"></div>
+</div>
+<div class="actions"><button class="btnblue" onclick="saveProduct()">Save Product</button><button class="btnlight" onclick="generateProductCode()">Auto Barcode</button><button class="btnlight" onclick="printLabelFromForm()">Print Barcode Label</button><button class="btnlight" onclick="clearProductForm()">Clear</button></div>
+<div class="barcodeBox" id="productBarcodePreview" style="margin-top:10px">Barcode preview</div>
+</div>
+<div class="panel"><div class="row"><div><label>Search</label><input id="prodSearch" oninput="renderProducts()" placeholder="Code / Name / Color"></div><div><label>Category</label><select id="prodFilter" onchange="renderProducts()"></select></div></div><div class="scroll" id="productTable"></div></div>
+</section>
+
+<section id="purchase" class="page">
+<h2>Purchase / Stock In</h2><div class="panel"><div class="formgrid"><div><label>Barcode / Code</label><input id="buyCode"></div><div><label>Quantity</label><input id="buyQty" type="number" value="1"></div><div><label>Purchase Price</label><input id="buyCost" type="number"></div><div><label>Supplier</label><input id="buySupplier"></div></div><button class="btngreen" style="margin-top:10px" onclick="addPurchase()">Add Stock</button></div>
+<div class="panel" id="purchaseTable"></div>
+</section>
+
+<section id="categories" class="page"><h2>Categories</h2><div class="panel"><div class="row"><input id="newCat" placeholder="New category name"><button class="btnblue" onclick="addCategory()">Add Category</button></div><div id="categoryTable" style="margin-top:10px"></div></div></section>
+<section id="customers" class="page"><h2>Customers</h2><div class="panel"><div class="formgrid"><input id="custName" placeholder="Customer name"><input id="custPhone" placeholder="Mobile"><input id="custAddress" placeholder="Address"><button class="btnblue" onclick="addCustomer()">Add Customer</button></div><div id="customerTable" style="margin-top:10px"></div></div></section>
+<section id="suppliers" class="page"><h2>Suppliers</h2><div class="panel"><div class="formgrid"><input id="supName" placeholder="Supplier name"><input id="supPhone" placeholder="Mobile"><input id="supAddress" placeholder="Address"><button class="btnblue" onclick="addSupplier()">Add Supplier</button></div><div id="supplierTable" style="margin-top:10px"></div></div></section>
+<section id="reports" class="page"><h2>Reports / Product Sales Report</h2><div class="panel" id="salesReport"></div></section>
+<section id="purchaseReport" class="page"><h2>Purchase Report</h2><div class="panel" id="purchaseReportBox"></div></section>
+<section id="stockReport" class="page"><h2>Stock Report</h2><div class="panel" id="stockReportBox"></div></section>
+<section id="profitReport" class="page"><h2>Profit Report</h2><div class="panel" id="profitReportBox"></div></section>
+<section id="expenses" class="page"><h2>Expenses</h2><div class="panel"><div class="formgrid"><div><label>Expense Name</label><input id="expName" placeholder="Expense name"></div><div><label>Category</label><select id="expCat"></select></div><div><label>Amount</label><input id="expAmount" type="number" placeholder="Amount"></div><div><label>Note</label><input id="expNote" placeholder="Note"></div></div><div class="actions"><button class="btnblue" id="expenseSaveBtn" onclick="addExpense()">Add Expense</button><button class="btnlight" onclick="clearExpenseForm()">Clear</button></div><div class="exp-cat-row"><input id="newExpCat" placeholder="New expense category (Admin only)"><button class="btnyellow" onclick="addExpenseCategory()">+ Add Category</button></div><div id="expenseTable" style="margin-top:10px"></div></div></section>
+<section id="backup" class="page"><h2>Backup / Restore</h2>
+<div class="panel"><div id="syncStatus" style="font-weight:700;margin-bottom:10px">● Checking connection...</div>
+<p>প্রতিটি পরিবর্তনের পর POS ডাটার একটি নিরাপদ local backup browser-এর IndexedDB-তে রাখা হবে। এছাড়া JSON backup ডাউনলোড করে আলাদা ফোন/কম্পিউটার/Google Drive-এ রেখে দিন।</p>
+<div class="actions"><button class="btnblue" onclick="downloadBackup()">💾 Download Full Backup</button><button class="btnlight" onclick="restoreBackup()">📥 Restore Backup</button><button class="btnlight" onclick="restoreLocalSnapshot()">♻ Restore Last Local Snapshot</button></div>
+<input id="restoreFile" type="file" accept=".json" style="margin-top:10px;display:block">
+<div id="backupInfo" style="margin-top:12px"></div></div></section>
+<section id="settings" class="page"><h2>Settings</h2><div class="panel"><div class="formgrid"><div><label>Shop Name</label><input id="shopName" value="New Zara Fashion"></div><div><label>Phone</label><input id="shopPhone" value=""></div><div><label>Address</label><input id="shopAddress" value=""></div><div><label>Billing Paper</label><select id="paperSize"><option value="80">80mm</option><option value="58">58mm</option></select></div></div><div class="formgrid" style="margin-top:10px"><div><label>Primary Color</label><input id="primaryColor" type="color" value="#1677e8"></div><div><label>Menu Font Size</label><select id="menuFontSize"><option value="13">13px</option><option value="15" selected>15px</option><option value="17">17px</option><option value="19">19px</option><option value="21">21px</option></select></div><div><label>POS / Form Font Size</label><select id="uiFontSize"><option value="13">13px</option><option value="15" selected>15px</option><option value="17">17px</option><option value="19">19px</option><option value="21">21px</option></select></div><div><label>Table Font Size</label><select id="tableFontSize"><option value="12">12px</option><option value="14" selected>14px</option><option value="16">16px</option><option value="18">18px</option><option value="20">20px</option></select></div></div><button class="btnblue" style="margin-top:10px" onclick="saveSettings()">Save Settings</button><hr><h3>Product Categories</h3><div class="row"><input id="settingsNewCat" placeholder="New product category"><button class="btnblue" onclick="addCategoryFromSettings()">+ Add Category</button></div><div id="settingsCategoryList" style="margin-top:10px"></div><hr><h3>Password</h3><div class="formgrid"><input id="oldPass" type="password" placeholder="Old password"><input id="newPass" type="password" placeholder="New password"><button class="btnblue" onclick="changePassword()">Change Password</button></div></div></section>
+</main></div>
+<div class="footer"><span>New Zara Fashion POS Software – V4.0</span><span>Barcode Roll: 2.25" × 1.25" • Billing: 80mm</span></div>
+</div>
+<div id="printArea"></div>
+
+<script>
+const DBKEY='NZF_POS_V3_DB';
+const defaults={
+ settings:{shop:'New Zara Fashion',phone:'',address:'',paper:'80'},
+ categories:['Shirt','T-Shirt','Polo','Pant','Jeans','Punjabi','Formal Pant','Kids','Women','Two Piece','Three Piece','Jacket','Sweater','Others'],
+ products:[],sales:[],purchases:[],expenses:[],customers:[],suppliers:[],
+ users:[{u:'admin',p:'admin123',role:'Administrator'},{u:'staff',p:'staff123',role:'Staff'}],
+ seq:0,invoiceSeq:0
+};
+let db=loadDB(), currentUser=null, cart=[], selectedPay='Cash', selectedRow=-1;
+const $=id=>document.getElementById(id);
+const loginUserEl=()=>$('loginUser'), loginPassEl=()=>$('loginPass'), loginMsgEl=()=>$('loginMsg'), loginEl=()=>$('login'), appEl=()=>$('app');
+function cloneDefaults(){return JSON.parse(JSON.stringify(defaults))}
+function loadDB(){try{let raw=localStorage.getItem(DBKEY);let x=raw?JSON.parse(raw):null;return x&&typeof x==='object'?x:cloneDefaults()}catch(e){return cloneDefaults()}}
+function saveDB(){try{localStorage.setItem(DBKEY,JSON.stringify(db));return true}catch(e){console.warn('Storage unavailable',e);return false}}
+function esc(x){return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function money(n){return '৳ '+Number(n||0).toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function today(){return new Date().toISOString().slice(0,10)}
+function nowText(){return new Date().toLocaleString('en-GB')}
+async function doLogin(){try{db=loadDB();const email=(loginUserEl()?.value||'').trim(),password=loginPassEl()?.value||'';if(!email||!password){loginMsgEl().textContent='Email এবং Password দিন';return false}const result=await supabaseLoginV4(email,password);if(!result.ok){loginMsgEl().textContent=(result.error==='Failed to fetch' ? 'Connection failed. Open V4 from HTTPS/GitHub Pages and try again.' : 'Login failed: '+result.error);return false}const localUser=(db.users||[]).find(a=>String(a.u)===email);currentUser=localUser?{...localUser,email:result.user.email}:{u:email,role:'Administrator',email:result.user.email};loginEl().style.display='none';appEl().style.display='block';$('userRole').textContent=currentUser.role;$('userName').textContent=currentUser.u;init();showPage('dashboard');return true}catch(e){console.error(e);loginMsgEl().textContent='Login error: '+e.message;return false}}
+function updateInvoicePreview(){let gross=cart.reduce((a,x)=>a+x.qty*x.price,0),dis=+saleDiscount.value||0,total=Math.max(0,gross-dis);invoicePreview.innerHTML=`<h3>${esc(db.settings.shop)}</h3><p>All Kinds of Ladies & Gents Item</p><p>${esc(db.settings.phone)}<br>${esc(db.settings.address)}</p><hr><div style="font-size:11px">Invoice: ${esc(invoiceNo?.value||'')}<br>Date: ${esc(invoiceDate?.value||'')}<br>Customer: ${esc(saleCustomer?.selectedOptions[0]?.text||'Walk-in Customer')}</div><hr><table><tr><th>Item</th><th>Qty</th><th>Total</th></tr>${cart.map(x=>`<tr><td>${esc(x.name)} (${esc(x.size)})</td><td>${x.qty}</td><td>${money(x.qty*x.price)}</td></tr>`).join('')}</table><hr><div class="sumrow"><span>Subtotal</span><b>${money(gross)}</b></div><div class="sumrow"><span>Discount</span><b>${money(dis)}</b></div><div class="sumrow grand"><span>Total</span><span>${money(total)}</span></div><hr><p>Paid By: ${esc(selectedPay)}</p><p>Thank You! Visit Again.</p>`}
+function completeSale(){if(!cart.length){alert('Cart খালি');return}for(let x of cart){let p=db.products.find(p=>p.code===x.code);if(!p||x.qty>p.stock){alert(x.name+' এর পর্যাপ্ত stock নেই');return}}let gross=cart.reduce((a,x)=>a+x.qty*x.price,0),dis=+saleDiscount.value||0,total=Math.max(0,gross-dis),profit=cart.reduce((a,x)=>a+x.qty*(x.price-x.cost),0)-dis;cart.forEach(x=>db.products.find(p=>p.code===x.code).stock-=x.qty);let s={invoice:invoiceNo.value,date:today(),dateText:invoiceDate.value,customer:saleCustomer.value||'',payment:selectedPay,total,profit,items:cart.map(x=>({code:x.code,name:x.name,size:x.size,color:x.color,qty:x.qty,price:x.price}))};db.sales.push(s);saveDB();printInvoice(s);cart=[];saleDiscount.value=0;newInvoice();renderAll()}
+function printInvoice(s){let items=s.items.map(x=>`<tr><td>${esc(x.name)}<br>${esc(x.size)} ${esc(x.color||'')}</td><td>${x.qty}</td><td>${money(x.qty*x.price)}</td></tr>`).join('');let total=s.total;printArea.innerHTML=`<div style="font-family:Arial;width:${db.settings.paper}mm;padding:4mm;background:white"><h2 style="text-align:center;margin:0">${esc(db.settings.shop)}</h2><div style="text-align:center;font-size:11px">${esc(db.settings.phone)}<br>${esc(db.settings.address)}</div><hr><div style="font-size:11px">Invoice: ${esc(s.invoice)}<br>Date: ${esc(s.dateText)}<br>Customer: ${esc(s.customer||'Walk-in Customer')}</div><hr><table style="width:100%;font-size:11px;border-collapse:collapse"><tr><th>Item</th><th>Qty</th><th>Total</th></tr>${items}</table><hr><div style="text-align:right;font-size:12px">Total Payable: <b>${money(total)}</b><br>Paid By: ${esc(s.payment)}</div><p style="text-align:center;font-size:11px">Thank You! Visit Again.</p></div>`;window.print();printArea.innerHTML=''}
+function printLabelFromForm(){let code=pCode.value.trim();if(!code){code=generateProductCode();pCode.value=code}let p=db.products.find(x=>x.code===code)||{code,name:pName.value||'Product',price:+pPrice.value||0,size:pSize.value||'',color:pColor.value||''};printLabels([p])}
+function printProductBarcode(code){let p=db.products.find(x=>x.code===code);if(!p){alert('Product পাওয়া যায়নি');return}printLabels([p])}
+function printLabels(arr){let labels=arr.map(p=>`<div class="label"><b>${esc(db.settings.shop)}</b><div>${esc(p.name)}</div><div>Price: ${money(p.price)}</div>${code128SVG(p.code)}<div style="font-weight:700">${esc(p.code)}</div></div>`).join('');let w=window.open('','_blank');w.document.write(`<html><head><title>Barcode Labels</title><style>@page{margin:4mm}.label{width:2.25in;height:1.25in;display:inline-flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border:1px solid #ddd;margin:2px;padding:5px;font-family:Arial;font-size:10px;vertical-align:top}.label svg{width:100%;height:45px}</style></head><body>${labels}<script>window.print()<\/script></body></html>`);w.document.close()}
+function addPurchase(){let p=db.products.find(x=>x.code===buyCode.value.trim());if(!p){alert('Product code পাওয়া যায়নি');return}let q=+buyQty.value||0,c=+buyCost.value||p.cost;if(q<=0)return;p.stock+=q;p.cost=c;db.purchases.push({date:today(),code:p.code,name:p.name,qty:q,cost:c,supplier:buySupplier.value,total:q*c});saveDB();renderAll();alert('Stock added')}
+function renderPurchases(){purchaseTable.innerHTML=`<table><tr><th>Date</th><th>Barcode</th><th>Product</th><th>Qty</th><th>Cost</th><th>Supplier</th><th>Total</th></tr>${db.purchases.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${esc(x.code)}</td><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.cost)}</td><td>${esc(x.supplier)}</td><td>${money(x.total)}</td></tr>`).join('')}</table>`}
+function addCategory(){let n=(newCat?.value||prompt('Category name')||'').trim();if(!n)return;if(!db.categories.includes(n))db.categories.push(n);if(newCat)newCat.value='';saveDB();renderAll()}
+function renderCategories(){categoryTable.innerHTML=`<table><tr><th>Category</th><th>Products</th><th>Action</th></tr>${db.categories.map(c=>`<tr><td>${esc(c)}</td><td>${db.products.filter(p=>p.cat===c).length}</td><td><button class="btnred" onclick="deleteCategory('${esc(c)}')">Delete</button></td></tr>`).join('')}</table>`}
+function deleteCategory(c){if(db.products.some(p=>p.cat===c)){alert('এই category-তে product আছে, আগে product category পরিবর্তন করুন');return}db.categories=db.categories.filter(x=>x!==c);saveDB();renderAll()}
+function addCustomer(){let n=custName.value.trim();if(!n)return;db.customers.push({name:n,phone:custPhone.value,address:custAddress.value});saveDB();custName.value=custPhone.value=custAddress.value='';renderAll()}
+function renderCustomers(){saleCustomer.innerHTML='<option value="">Walk-in Customer</option>'+db.customers.map((c,i)=>`<option value="${i}">${esc(c.name)} - ${esc(c.phone)}</option>`).join('');customerTable.innerHTML=`<table><tr><th>Name</th><th>Mobile</th><th>Address</th></tr>${db.customers.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${esc(c.address)}</td></tr>`).join('')}</table>`}
+function addSupplier(){let n=supName.value.trim();if(!n)return;db.suppliers.push({name:n,phone:supPhone.value,address:supAddress.value});saveDB();supName.value=supPhone.value=supAddress.value='';renderAll()}
+function renderSuppliers(){supplierTable.innerHTML=`<table><tr><th>Name</th><th>Mobile</th><th>Address</th></tr>${db.suppliers.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.phone)}</td><td>${esc(s.address)}</td></tr>`).join('')}</table>`}
+function renderReports(){salesReport.innerHTML=`<table><tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Payment</th><th>Total</th><th>Profit</th><th>Action</th></tr>${db.sales.slice().reverse().map(s=>`<tr><td>${s.date}</td><td>${esc(s.invoice)}</td><td>${esc(s.customer||'Walk-in')}</td><td>${esc(s.payment)}</td><td>${money(s.total)}</td><td>${money(s.profit)}</td><td><button class="btnred" onclick="deleteSale('${esc(s.invoice)}')">Delete</button></td></tr>`).join('')}</table>`;purchaseReportBox.innerHTML=`<table><tr><th>Date</th><th>Code</th><th>Product</th><th>Qty</th><th>Total</th></tr>${db.purchases.slice().reverse().map(p=>`<tr><td>${p.date}</td><td>${esc(p.code)}</td><td>${esc(p.name)}</td><td>${p.qty}</td><td>${money(p.total)}</td></tr>`).join('')}</table>`}
+function renderStockReports(){stockReportBox.innerHTML=`<table><tr><th>Barcode</th><th>Product</th><th>Category</th><th>Size</th><th>Stock</th><th>Stock Value</th></tr>${db.products.map(p=>`<tr><td>${esc(p.code)}</td><td>${esc(p.name)}</td><td>${esc(p.cat)}</td><td>${esc(p.size)}</td><td>${p.stock}</td><td>${money(p.stock*p.cost)}</td></tr>`).join('')}</table>`;let gp=db.sales.reduce((a,s)=>a+s.profit,0),ex=db.expenses.reduce((a,e)=>a+e.amount,0);profitReportBox.innerHTML=`<div class="gridcards"><div class="card green">Gross Profit<div class="big">${money(gp)}</div></div><div class="card red">Expenses<div class="big">${money(ex)}</div></div><div class="card blue">Net Profit<div class="big">${money(gp-ex)}</div></div></div>`}
+let editingExpense=-1;
+function addExpense(){let n=expName.value.trim(),a=+expAmount.value||0;if(!n||!a){alert('Expense name ও Amount দিন');return}if(editingExpense>=0){let e=db.expenses[editingExpense];e.name=n;e.amount=a;e.note=expNote.value;editingExpense=-1;expenseSaveBtn.textContent='Add Expense'}else{db.expenses.push({date:today(),name:n,amount:a,note:expNote.value})}saveDB();clearExpenseForm();renderAll()}
+function editExpense(i){let e=db.expenses[i];if(!e)return;editingExpense=i;expName.value=e.name;expAmount.value=e.amount;expNote.value=e.note||'';expenseSaveBtn.textContent='Update Expense';showPage('expenses')}
+function deleteExpense(i){if(!confirm('এই expense delete করবেন?'))return;db.expenses.splice(i,1);saveDB();if(editingExpense===i)clearExpenseForm();renderAll()}
+function clearExpenseForm(){expName.value='';expAmount.value='';expNote.value='';if(typeof expCat!=='undefined'&&expCat.options.length)expCat.selectedIndex=0;editingExpense=-1;if(typeof expenseSaveBtn!=='undefined')expenseSaveBtn.textContent='Add Expense'}
+function deleteSale(invoice){let i=db.sales.findIndex(s=>s.invoice===invoice);if(i<0)return;let s=db.sales[i];if(!confirm('Invoice '+invoice+' delete করবেন? Stock আবার ফেরত যাবে।'))return;s.items.forEach(x=>{let p=db.products.find(p=>p.code===x.code);if(p)p.stock+=x.qty});db.sales.splice(i,1);saveDB();renderAll()}
+function renderExpenses(){expenseTable.innerHTML=`<table><tr><th>Date</th><th>Expense</th><th>Amount</th><th>Note</th><th>Action</th></tr>${db.expenses.map((e,i)=>`<tr><td>${e.date}</td><td>${esc(e.name)}</td><td>${money(e.amount)}</td><td>${esc(e.note)}</td><td><button class="btnlight" onclick="editExpense(${i})">Edit</button> <button class="btnred" onclick="deleteExpense(${i})">Delete</button></td></tr>`).reverse().join('')}</table>`}
+function downloadBackup(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));a.download='new-zara-fashion-backup-'+today()+'.json';a.click()}
+function restoreBackup(){let f=restoreFile.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);saveDB();location.reload()}catch(e){alert('Invalid backup file')}};r.readAsText(f)}
+function changePassword(){let old=oldPass.value,nw=newPass.value;if(!currentUser||currentUser.p!==old){alert('Old password ভুল');return}if(nw.length<4){alert('কমপক্ষে 4 অক্ষর দিন');return}currentUser.p=nw;let u=db.users.find(x=>x.u===currentUser.u);u.p=nw;saveDB();alert('Password changed')}
+document.addEventListener('input',e=>{if(e.target.id==='pCode'||e.target.id==='pPrice'||e.target.id==='pName'||e.target.id==='pSize'||e.target.id==='pColor')updateProductBarcodePreview()})
+$('loginPass')?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()})
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='productReportSearch')renderReports()})
+
+/* ===== Enhanced POS V3 logic ===== */
+function ensureDb(){db.expenseCategories=Array.isArray(db.expenseCategories)?db.expenseCategories:['Rent','Electricity','Salary','Transport','Food','Other'];db.workdays=db.workdays||[];db.currentWorkday=db.currentWorkday||null;db.settings=db.settings||{};db.settings.primaryColor=db.settings.primaryColor||'#1677e8';db.settings.menuFontSize=db.settings.menuFontSize||'15';db.settings.uiFontSize=db.settings.uiFontSize||'15';db.settings.tableFontSize=db.settings.tableFontSize||'14';db.sales=db.sales||[];db.customers=db.customers||[]}
+ensureDb();
+// Enhanced DB migration is handled without wrapping loadDB (avoids recursive initialization).
+function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));let pg=document.getElementById(id);if(pg)pg.classList.add('active');document.querySelectorAll('aside button,.topnav button').forEach(x=>x.classList.remove('active'));['side-'+id,'top-'+id].forEach(x=>{let e=document.getElementById(x);if(e)e.classList.add('active')});if(currentUser&&currentUser.role!=='Administrator'&&['settings','categories','products','purchase','suppliers'].includes(id))id='dashboard';renderAll();if(id==='pos')setTimeout(()=>scan.focus(),100)}
+function init(){ensureDb();loadSettingsEnhanced();refreshCategorySelects();renderAll();renderSettingsCategories();renderMainMenu();renderWorkday();let staff=currentUser?.role!=='Administrator';['side-products','side-purchase','side-categories','side-suppliers','top-products','top-purchase','top-settings','side-settings'].forEach(id=>{let e=document.getElementById(id);if(e)e.style.display=staff?'none':''});}
+function loadSettingsEnhanced(){if(typeof shopName!=='undefined'){shopName.value=db.settings.shop||'New Zara Fashion';shopPhone.value=db.settings.phone||'';shopAddress.value=db.settings.address||'';paperSize.value=db.settings.paper||'80';if(primaryColor)primaryColor.value=db.settings.primaryColor||'#1677e8';if(menuFontSize)menuFontSize.value=db.settings.menuFontSize||'15';if(uiFontSize)uiFontSize.value=db.settings.uiFontSize||'15';if(tableFontSize)tableFontSize.value=db.settings.tableFontSize||'14';applyAppearance()}}
+function applyAppearance(){document.documentElement.style.setProperty('--blue',db.settings.primaryColor||'#1677e8');document.documentElement.style.setProperty('--ui-font-size',(db.settings.uiFontSize||15)+'px');document.documentElement.style.setProperty('--table-font-size',(db.settings.tableFontSize||14)+'px');document.querySelectorAll('.main-menu-grid button').forEach(b=>b.style.fontSize=(db.settings.menuFontSize||15)+'px');document.querySelectorAll('input,select,textarea,button,label').forEach(e=>{if(!e.closest('.main-menu-grid'))e.style.fontSize=(db.settings.uiFontSize||15)+'px'});document.querySelectorAll('table').forEach(t=>t.style.fontSize=(db.settings.tableFontSize||14)+'px')}
+function saveSettings(){if(!currentUser||currentUser.role!=='Administrator'){alert('Only Administrator can change Settings');return}db.settings={...db.settings,shop:shopName.value||'New Zara Fashion',phone:shopPhone.value,address:shopAddress.value,paper:paperSize.value,primaryColor:primaryColor.value||'#1677e8',menuFontSize:menuFontSize.value||'15',uiFontSize:uiFontSize.value||'15',tableFontSize:tableFontSize.value||'14'};saveDB();applyAppearance();alert('Settings saved')}
+function renderSettingsCategories(){let box=document.getElementById('settingsCategoryList');if(!box)return;box.innerHTML=`<div class="scroll"><table><tr><th>Category</th><th>Products</th><th>Action</th></tr>${(db.categories||[]).map(c=>`<tr><td>${esc(c)}</td><td>${db.products.filter(p=>p.cat===c).length}</td><td><button class="btnred" onclick="deleteCategory('${esc(c)}')">Delete</button></td></tr>`).join('')}</table></div>`}
+function addCategoryFromSettings(){if(currentUser?.role!=='Administrator'){alert('Only Administrator can add category');return}let el=document.getElementById('settingsNewCat'),n=(el?.value||'').trim();if(!n){alert('Category name দিন');return}if(db.categories.includes(n)){alert('Category already exists');return}db.categories.push(n);el.value='';saveDB();refreshCategorySelects();renderSettingsCategories();renderCategories()}
+function renderMainMenu(){let m=[['dashboard','▣ Dashboard'],['pos','🛒 POS Sales'],['products','▣ Products'],['purchase','▣ Purchase'],['customers','♙ Customers'],['reports','▥ Sales Report'],['expenses','৳ Expenses'],['settings','⚙ Settings']];let box=document.getElementById('mainMenuGrid');if(!box)return;box.innerHTML=m.filter(a=>currentUser?.role==='Administrator'||!['products','purchase','settings'].includes(a[0])).map(a=>`<button onclick="showPage('${a[0]}')">${a[1]}</button>`).join('');applyAppearance()}
+function workdayOpen(){return !!db.currentWorkday}
+function renderWorkday(){let st=document.getElementById('workStatus'),info=document.getElementById('workDepositInfo');if(!st)return;if(db.currentWorkday){let cash=db.sales.filter(s=>s.workday===db.currentWorkday.date).reduce((a,s)=>a+(s.payments?.cash||0),0),expected=(db.currentWorkday.deposit||0)+cash;st.textContent='Workday Open: '+db.currentWorkday.date;st.className='work-status';info.textContent='Opening Deposit: '+money(db.currentWorkday.deposit||0)+' + Cash Sales: '+money(cash)+' = Expected Cash: '+money(expected)}else{st.textContent='Workday Closed';st.className='work-status closed';info.textContent=''}let h=document.getElementById('dashDepositHistory');if(h)h.innerHTML=(db.workdays||[]).slice().reverse().slice(0,8).map(w=>`<div style="padding:5px;border-bottom:1px solid #eee"><b>${w.date}</b> — Deposit ${money(w.deposit||0)} — Sales ${money(w.sales||0)}</div>`).join('')||'<div class="empty">No workday history</div>'}
+function openWorkday(){if(currentUser?.role!=='Administrator'){alert('Only Administrator can open Workday');return}if(db.currentWorkday){alert('Workday already open');return}let dep=+prompt('Opening Deposit / Previous day cash balance (৳)', '0')||0;db.currentWorkday={date:today(),openTime:nowText(),deposit:dep};saveDB();renderWorkday();renderDashboard()}
+function closeWorkday(){if(currentUser?.role!=='Administrator'){alert('Only Administrator can close Workday');return}if(!db.currentWorkday){alert('Workday is not open');return}let sales=db.sales.filter(s=>s.workday===db.currentWorkday.date).reduce((a,s)=>a+s.total,0),cash=db.sales.filter(s=>s.workday===db.currentWorkday.date).reduce((a,s)=>a+(s.payments?.cash||0),0);let finalCash=+prompt('Cash left/deposit at closing (৳)',String(Math.round((db.currentWorkday.deposit||0)+cash)))||0;db.workdays.push({...db.currentWorkday,closeTime:nowText(),sales,cashSales:cash,closingCash:finalCash});db.currentWorkday=null;saveDB();renderWorkday();renderDashboard();alert('Workday closed successfully')}
+function discountValue(gross){let v=+saleDiscount.value||0;return document.getElementById('discountType')?.value==='percent'?Math.min(gross,gross*v/100):Math.min(gross,v)}
+function paymentTotals(){let gross=cart.reduce((a,x)=>a+x.qty*x.price,0),dis=discountValue(gross),total=Math.max(0,gross-dis),cash=+payCash.value||0,card=+payCard.value||0,bk=+payBkash.value||0,received=cash+card+bk;return {gross,dis,total,cash,card,bk,received,change:Math.max(0,received-total),due:Math.max(0,total-received)}}
+function updatePaymentSummary(){let t=paymentTotals();payable.textContent=t.total.toFixed(2);payableBig.textContent=t.total.toFixed(2);receivedTotal.textContent=t.received.toFixed(2);changeAmount.textContent=t.change.toFixed(2);paymentHint.textContent=t.due>0?'Due: ৳ '+t.due.toFixed(2):(t.change>0?'Return change: ৳ '+t.change.toFixed(2):'Payment matched');updateInvoicePreview()}
+function renderCart(){cartBody.innerHTML=cart.length?cart.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.code)}</td><td>${esc(x.name)}</td><td>${esc(x.size)}</td><td>${esc(x.color)}</td><td>${money(x.price)}</td><td><input style="width:65px" type="number" min="1" value="${x.qty}" onchange="setQty(${i},this.value)"></td><td>${money(x.qty*x.price)}</td><td><button class="btnred" onclick="removeCart(${i})">X</button></td></tr>`).join(''):'<tr><td colspan="9" class="empty">No items added</td></tr>';updatePaymentSummary()}
+function updateInvoicePreview(){let t=paymentTotals(),custName=document.getElementById('saleCustomerName')?.value||'',custPhone=document.getElementById('saleCustomerPhone')?.value||'';invoicePreview.innerHTML=`<h3>${esc(db.settings.shop)}</h3><p>All Kinds of Ladies & Gents Item</p><p>${esc(db.settings.phone)}<br>${esc(db.settings.address)}</p><hr><div style="font-size:11px">Invoice: ${esc(invoiceNo?.value||'')}<br>Date: ${esc(invoiceDate?.value||'')}<br>Customer: ${esc(custName||'Walk-in Customer')} ${custPhone?'| '+esc(custPhone):''}</div><hr><table><tr><th>Item</th><th>Qty</th><th>Total</th></tr>${cart.map(x=>`<tr><td>${esc(x.name)} (${esc(x.size)})</td><td>${x.qty}</td><td>${money(x.qty*x.price)}</td></tr>`).join('')}</table><hr><div class="sumrow"><span>Subtotal</span><b>${money(t.gross)}</b></div><div class="sumrow"><span>Discount ${document.getElementById('discountType')?.value==='percent'?'('+saleDiscount.value+'%)':''}</span><b>${money(t.dis)}</b></div><div class="sumrow grand"><span>Total</span><span>${money(t.total)}</span></div><div class="sumrow"><span>Cash</span><b>${money(t.cash)}</b></div><div class="sumrow"><span>${esc(payCardMethod?.value||'Card')}</span><b>${money(t.card)}</b></div><div class="sumrow"><span>bKash</span><b>${money(t.bk)}</b></div><div class="sumrow"><span>Received</span><b>${money(t.received)}</b></div><div class="sumrow"><span>Change</span><b>${money(t.change)}</b></div><hr><p>Thank You! Visit Again.</p>`}
+function completeSale(){
+  if(!cart.length){alert('Cart খালি');return}
+  if(!db.currentWorkday){alert('আগে Workday Open করুন');return}
+  for(let x of cart){let p=db.products.find(p=>p.code===x.code);if(!p||x.qty>p.stock){alert(x.name+' এর পর্যাপ্ত stock নেই');return}}
+  let t=paymentTotals();
+  if(t.due>0){if(!confirm('Payment কম আছে। Due হিসেবে bill save করবেন?'))return}
+  let customerName=document.getElementById('saleCustomerName').value.trim(),customerPhone=document.getElementById('saleCustomerPhone').value.trim();
+  let paymentParts=[];if(t.cash)paymentParts.push('Cash');if(t.card)paymentParts.push(payCardMethod.value);if(t.bk)paymentParts.push('bKash');
+  let profit=cart.reduce((a,x)=>a+x.qty*(x.price-x.cost),0)-t.dis;
+  let s={invoice:invoiceNo.value,date:today(),dateText:invoiceDate.value,customer:customerName||'',customerPhone,payment:paymentParts.join(' + ')||'Cash',payments:{cash:t.cash,card:t.card,bkash:t.bk,cardMethod:payCardMethod.value},received:t.received,change:t.change,due:t.due,total:t.total,discount:t.dis,discountType:discountType.value,profit,workday:db.currentWorkday.date,items:cart.map(x=>({code:x.code,name:x.name,size:x.size,color:x.color,qty:x.qty,price:x.price}))};
+  // IMPORTANT: Do not add the sale or reduce stock until printing is completed and confirmed.
+  printInvoice(s);
+  let printed=confirm('Print dialog বন্ধ হয়েছে। বিলটি কি সফলভাবে Print হয়েছে?\n\nOK = Report-এ Save হবে\nCancel = Bill বাতিল হবে এবং Report-এ আসবে না');
+  if(!printed){alert('বিল বাতিল করা হয়েছে। এটি Report-এ যোগ হয়নি এবং Stock-ও পরিবর্তন হয়নি।');return}
+  if(customerName){let ex=db.customers.find(c=>c.phone&&c.phone===customerPhone);if(ex){ex.name=customerName}else db.customers.push({name:customerName,phone:customerPhone,address:''})}
+  cart.forEach(x=>{let p=db.products.find(p=>p.code===x.code);if(p)p.stock-=x.qty});
+  db.sales.push(s);saveDB();
+  cart=[];saleDiscount.value=0;discountType.value='tk';payCash.value=payCard.value=payBkash.value=0;payCardMethod.value='Card';document.getElementById('saleCustomerName').value='';document.getElementById('saleCustomerPhone').value='';newInvoice();renderAll();renderWorkday();
+  alert('Bill successfully saved to Report.');
+}
+function printInvoice(s){let items=s.items.map(x=>`<tr><td>${esc(x.name)}<br>${esc(x.code)} / ${esc(x.size)}</td><td>${x.qty}</td><td>${money(x.qty*x.price)}</td></tr>`).join('');printArea.innerHTML=`<div style="font-family:Arial;width:${db.settings.paper}mm;padding:4mm;background:white"><h2 style="text-align:center;margin:0">${esc(db.settings.shop)}</h2><div style="text-align:center;font-size:11px">${esc(db.settings.phone)}<br>${esc(db.settings.address)}</div><hr><div style="font-size:11px">Invoice: ${esc(s.invoice)}<br>Date: ${esc(s.dateText)}<br>Customer: ${esc(s.customer||'Walk-in Customer')}<br>Mobile: ${esc(s.customerPhone||'-')}</div><hr><table style="width:100%;font-size:11px;border-collapse:collapse"><tr><th>Item</th><th>Qty</th><th>Total</th></tr>${items}</table><hr><div style="text-align:right;font-size:12px">Subtotal: <b>${money(s.items.reduce((a,x)=>a+x.qty*x.price,0))}</b><br>Discount: <b>${money(s.discount)}</b><br>Total: <b>${money(s.total)}</b><br>Cash: ${money(s.payments?.cash)}<br>${esc(s.payments?.cardMethod||'Card')}: ${money(s.payments?.card)}<br>bKash: ${money(s.payments?.bkash)}<br>Received: <b>${money(s.received)}</b><br>Change: <b>${money(s.change)}</b>${s.due?'<br>Due: <b>'+money(s.due)+'</b>':''}</div><p style="text-align:center;font-size:11px">Thank You! Visit Again.</p></div>`;window.print();printArea.innerHTML=''}
+function deleteSale(inv){if(currentUser?.role!=='Administrator'){alert('Only Administrator can delete a sale');return}let s=db.sales.find(x=>x.invoice===inv);if(!s)return;if(!confirm('এই বিলটি Delete করবেন? Stock আবার ফেরত যাবে।'))return;s.items.forEach(x=>{let p=db.products.find(p=>p.code===x.code);if(p)p.stock+=x.qty});db.sales=db.sales.filter(x=>x.invoice!==inv);saveDB();renderAll();alert('Sale deleted and stock restored')}
+function renderDashboard(){let t=today(),ss=db.sales.filter(x=>x.date===t),sales=ss.reduce((a,x)=>a+x.total,0),cash=ss.reduce((a,x)=>a+(x.payments?.cash||0),0),card=ss.reduce((a,x)=>a+(x.payments?.card||0),0),bk=ss.reduce((a,x)=>a+(x.payments?.bkash||0),0),ex=db.expenses.filter(x=>x.date===t).reduce((a,x)=>a+x.amount,0),profit=ss.reduce((a,x)=>a+x.profit,0),low=db.products.filter(p=>p.stock<=p.reorder),stockValue=db.products.reduce((a,p)=>a+p.stock*p.cost,0);kToday.textContent=money(sales);kTodayInv.textContent=ss.length+' Invoice';kCash.textContent=money(cash);kCard.textContent=money(card);kBkash.textContent=money(bk);kExpenses.textContent=money(ex);let from=dashFrom?.value||'',to=dashTo?.value||'';let arr=db.sales.filter(s=>(!from||s.date>=from)&&(!to||s.date<=to)&&(!dashPay?.value||s.payment.includes(dashPay.value)));let total=arr.reduce((a,s)=>a+s.total,0);dashSalesDetail.innerHTML=`<b>${arr.length} Invoice</b> — Total Sales: <b>${money(total)}</b> — Profit: <b>${money(arr.reduce((a,s)=>a+s.profit,0))}</b><div class="scroll"><table><tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Payment</th><th>Total</th><th>Action</th></tr>${arr.slice().reverse().map(s=>`<tr><td>${s.date}</td><td>${esc(s.invoice)}</td><td>${esc(s.customer||'Walk-in')}<br>${esc(s.customerPhone||'')}</td><td>${esc(s.payment)}</td><td>${money(s.total)}</td><td><button class="btnred" onclick="deleteSale('${esc(s.invoice)}')">Delete</button></td></tr>`).join('')}</table></div>`;dashLow.innerHTML=low.length?low.slice(0,7).map(p=>`<div style="padding:5px"><span class="pill low">Stock: ${p.stock}</span> ${esc(p.name)} (${esc(p.size)})</div>`).join(''):'<div class="empty">No low stock</div>';recentSales.innerHTML=db.sales.slice(-6).reverse().map(s=>`<div class="row" style="padding:6px;border-bottom:1px solid #eee"><div><b>${esc(s.invoice)}</b><br><span class="muted">${s.date}</span></div><div style="text-align:right"><b>${money(s.total)}</b><br>${esc(s.payment)}</div></div>`).join('')||'<div class="empty">No sales yet</div>';renderWorkday()}
+function addCategory(){if(currentUser?.role!=='Administrator'){alert('Only Administrator can add category');return}let n=(newCat?.value||prompt('Category name')||'').trim();if(!n)return;if(!db.categories.includes(n))db.categories.push(n);if(newCat)newCat.value='';saveDB();renderAll();renderSettingsCategories()}
+function deleteCategory(c){if(currentUser?.role!=='Administrator'){alert('Only Administrator can delete category');return}if(db.products.some(p=>p.cat===c)){alert('এই category-তে product আছে, আগে product category পরিবর্তন করুন');return}db.categories=db.categories.filter(x=>x!==c);saveDB();renderAll();renderSettingsCategories()}
+function refreshCategorySelects(){let opts=db.categories.map(x=>`<option>${esc(x)}</option>`).join('');pCat.innerHTML=opts;prodFilter.innerHTML='<option value="">All Categories</option>'+opts;dashCats.innerHTML=db.categories.map(c=>`<span class="pill">${esc(c)}</span>`).join('');if(typeof expCat!=='undefined')expCat.innerHTML=(db.expenseCategories||[]).map(x=>`<option>${esc(x)}</option>`).join('')}
+function addExpenseCategory(){if(currentUser?.role!=='Administrator'){alert('Only Administrator can add expense category');return}let n=(newExpCat.value||'').trim();if(!n)return;if(!db.expenseCategories.includes(n))db.expenseCategories.push(n);newExpCat.value='';saveDB();refreshCategorySelects();renderExpenses()}
+function addExpense(){let n=expName.value.trim(),a=+expAmount.value||0;if(!n||!a){alert('Expense name এবং Amount দিন');return}db.expenses.push({date:today(),name:n,amount:a,note:expNote.value,category:expCat.value||'Other'});saveDB();clearExpenseForm();renderAll()}
+function renderExpenses(){expenseTable.innerHTML=`<table><tr><th>Date</th><th>Category</th><th>Expense</th><th>Amount</th><th>Note</th><th>Action</th></tr>${db.expenses.slice().reverse().map((e)=>{let i=db.expenses.indexOf(e);return `<tr><td>${e.date}</td><td>${esc(e.category||'Other')}</td><td>${esc(e.name)}</td><td>${money(e.amount)}</td><td>${esc(e.note||'')}</td><td><button class="btnlight" onclick="editExpense(${i})">Edit</button> <button class="btnred" onclick="deleteExpense(${i})">Delete</button></td></tr>`}).join('')}</table>`}
+function editExpense(i){if(currentUser?.role!=='Administrator'){alert('Only Administrator can edit expense');return}let e=db.expenses[i];if(!e)return;let n=prompt('Expense name',e.name);if(n===null)return;let a=prompt('Amount',e.amount);if(a===null)return;let c=prompt('Category',e.category||'Other');if(c===null)return;e.name=n;e.amount=+a||0;e.category=c||'Other';e.note=prompt('Note',e.note||'')??e.note;if(e.category&&!db.expenseCategories.includes(e.category))db.expenseCategories.push(e.category);saveDB();renderAll()}
+function deleteExpense(i){if(currentUser?.role!=='Administrator'){alert('Only Administrator can delete expense');return}if(confirm('Delete expense?')){db.expenses.splice(i,1);saveDB();renderAll()}}
+function renderReports(){
+  let rf=document.getElementById('reportFrom')?.value||'', rt=document.getElementById('reportTo')?.value||'', q=(document.getElementById('productReportSearch')?.value||'').trim().toLowerCase();
+  let filtered=db.sales.filter(s=>(!rf||s.date>=rf)&&(!rt||s.date<=rt));
+  let total=filtered.reduce((a,s)=>a+s.total,0), card=filtered.reduce((a,s)=>a+(s.payments?.card||0),0), bk=filtered.reduce((a,s)=>a+(s.payments?.bkash||0),0), cash=filtered.reduce((a,s)=>a+(s.payments?.cash||0),0);
+  let exp=db.expenses.filter(e=>(!rf||e.date>=rf)&&(!rt||e.date<=rt)).reduce((a,e)=>a+e.amount,0);
+  let banks={}; filtered.forEach(s=>{let m=s.payments?.cardMethod||'Card'; if(s.payments?.card) banks[m]=(banks[m]||0)+s.payments.card});
+  let workdays=[...(db.workdays||[])]; if(db.currentWorkday) workdays.push(db.currentWorkday); let depByDate={}; workdays.forEach(w=>{if(w?.date)depByDate[w.date]=+w.deposit||0});
+  let days={}; filtered.forEach(s=>{let d=days[s.date]||(days[s.date]={cash:0,card:0,bk:0,total:0,exp:0}); d.cash+=s.payments?.cash||0; d.card+=s.payments?.card||0; d.bk+=s.payments?.bkash||0; d.total+=s.total||0});
+  db.expenses.filter(e=>(!rf||e.date>=rf)&&(!rt||e.date<=rt)).forEach(e=>{let d=days[e.date]||(days[e.date]={cash:0,card:0,bk:0,total:0,exp:0}); d.exp+=(+e.amount||0)});
+  let bankHeads=Object.keys(banks).map(k=>`<th>${esc(k)}</th>`).join('');
+  let dayRows=Object.keys(days).sort().reverse().map(d=>{let x=days[d],dep=depByDate[d]||0,expected=(x.cash||0)-(x.exp||0)+dep;return `<tr><td>${d}</td><td>${money(x.total)}</td><td>${money(x.card)}</td><td>${money(x.bk)}</td><td>${money(x.cash)}</td>${Object.keys(banks).map(k=>`<td>${money(filtered.filter(s=>s.date===d).reduce((a,s)=>a+((s.payments?.cardMethod||'Card')===k?(s.payments?.card||0):0),0))}</td>`).join('')}<td>${money(x.exp)}</td><td>${money(dep)}</td><td><b>${money(expected)}</b></td></tr>`}).join('');
+  let products={}; filtered.forEach(s=>(s.items||[]).forEach(x=>{let key=x.code||x.name;if(q&&!((x.name||'').toLowerCase().includes(q)||(x.code||'').toLowerCase().includes(q)))return;let r=products[key]||(products[key]={code:x.code||'',name:x.name||'',size:x.size||'',color:x.color||'',qty:0,sales:0});r.qty+=+x.qty||0;r.sales+=(+x.qty||0)*(+x.price||0)}));
+  let productRows=Object.values(products).sort((a,b)=>b.sales-a.sales).map(r=>`<tr><td>${esc(r.code)}</td><td>${esc(r.name)}</td><td>${esc(r.size)}</td><td>${esc(r.color)}</td><td>${r.qty}</td><td>${money(r.sales)}</td></tr>`).join('');
+  let rangeDeposit=Object.keys(depByDate).filter(d=>(!rf||d>=rf)&&(!rt||d<=rt)).reduce((a,d)=>a+depByDate[d],0), netCash=cash-exp+rangeDeposit;
+  salesReport.innerHTML=`<div class="gridcards" style="grid-template-columns:repeat(6,minmax(120px,1fr))"><div class="card green">Total Sales<div class="big">${money(total)}</div></div><div class="card purple">Card Sales<div class="big">${money(card)}</div></div><div class="card yellow">bKash Sales<div class="big">${money(bk)}</div></div><div class="card blue">Cash Sales<div class="big">${money(cash)}</div></div><div class="card red">Expenses<div class="big">${money(exp)}</div></div><div class="card green">Deposit / Expected Cash<div class="big">${money(netCash)}</div></div></div>
+  <div class="panel"><h3>Cash Reconciliation</h3><div style="font-size:17px;font-weight:700;line-height:1.9">Total Sale − Card Sale − bKash Sale = Cash Sale<br>Cash Sale − Expenses + Opening Deposit = <span>${money(netCash)}</span></div></div>
+  <div class="panel"><h3>Report Search</h3><div class="formgrid"><div><label>From Date</label><input id="reportFrom" type="date" value="${rf}"></div><div><label>To Date</label><input id="reportTo" type="date" value="${rt}"></div><div><label>Product Search</label><input id="productReportSearch" placeholder="Product / Code" value="${esc(q)}"></div><div><label>&nbsp;</label><button class="btnblue" onclick="renderReports()">Search Report</button></div></div></div>
+  <div class="panel"><h3>Daily Payment Summary</h3><div class="scroll"><table><tr><th>Date</th><th>Total Sale</th><th>Card Sale</th><th>bKash Sale</th><th>Cash Sale</th>${bankHeads}<th>Expense</th><th>Opening Deposit</th><th>Cash After Expense / Expected Deposit</th></tr>${dayRows||'<tr><td colspan="10" class="empty">No sales found</td></tr>'}</table></div></div>
+  <div class="panel"><h3>Product Sales Report</h3><div class="scroll"><table><tr><th>Code</th><th>Product</th><th>Size</th><th>Color</th><th>Qty Sold</th><th>Sales Amount</th></tr>${productRows||'<tr><td colspan="6" class="empty">No product sales found</td></tr>'}</table></div></div>`;
+  purchaseReportBox.innerHTML=`<table><tr><th>Date</th><th>Code</th><th>Product</th><th>Qty</th><th>Total</th></tr>${db.purchases.slice().reverse().map(p=>`<tr><td>${p.date}</td><td>${esc(p.code)}</td><td>${esc(p.name)}</td><td>${p.qty}</td><td>${money(p.total)}</td></tr>`).join('')}</table>`;
+}
+
+function addByCode(code){let p=db.products.find(x=>x.code===code);if(!p){alert('Product পাওয়া যায়নি: '+code);return}infoName.value=p.name;infoCat.value=p.cat;infoSize.value=p.size;infoColor.value=p.color;infoStock.value=p.stock;infoPrice.value=p.price;let x=cart.find(i=>i.code===code);if(x)x.qty++;else cart.push({...p,qty:1,selected:false});renderCart()}
+document.getElementById('saleCustomer')?.addEventListener('change',function(){let c=db.customers[+this.value];if(c){saleCustomerName.value=c.name||'';saleCustomerPhone.value=c.phone||'';updateInvoicePreview()}});
+document.addEventListener('input',e=>{if(['saleCustomerName','saleCustomerPhone','saleDiscount','payCash','payCard','payBkash'].includes(e.target.id))updatePaymentSummary()});
+document.addEventListener('DOMContentLoaded',()=>{
+  const noEl=document.getElementById('invoiceNo'), dateEl=document.getElementById('invoiceDate');
+  if(noEl&&dateEl&&(!noEl.value||!dateEl.value)) newInvoice();
+  else if(noEl&&dateEl) updateInvoicePreview();
+});
+
+/* ===== Reliable local backup / offline protection ===== */
+const BACKUP_DB_NAME='NZF_POS_BACKUP_V1', BACKUP_STORE='snapshots';
+let backupDBPromise=null;
+function openBackupDB(){
+  if(backupDBPromise)return backupDBPromise;
+  backupDBPromise=new Promise((resolve,reject)=>{
+    if(!window.indexedDB){reject(new Error('IndexedDB unavailable'));return}
+    const req=indexedDB.open(BACKUP_DB_NAME,1);
+    req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(BACKUP_STORE))req.result.createObjectStore(BACKUP_STORE,{keyPath:'id'})};
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+  }); return backupDBPromise;
+}
+async function saveLocalSnapshot(){
+  try{const idb=await openBackupDB();const tx=idb.transaction(BACKUP_STORE,'readwrite');tx.objectStore(BACKUP_STORE).put({id:'latest',savedAt:new Date().toISOString(),data:JSON.stringify(db)});await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});updateBackupInfo();return true}catch(e){console.warn('Local snapshot failed',e);return false}
+}
+async function restoreLocalSnapshot(){
+  try{const idb=await openBackupDB();const tx=idb.transaction(BACKUP_STORE,'readonly'),req=tx.objectStore(BACKUP_STORE).get('latest');const row=await new Promise((res,rej)=>{req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)});if(!row){alert('কোনো Local Snapshot পাওয়া যায়নি।');return}if(!confirm('শেষ Local Snapshot restore করবেন? বর্তমান ডাটা replace হবে।'))return;db=JSON.parse(row.data);localStorage.setItem(DBKEY,JSON.stringify(db));alert('Local Snapshot restore হয়েছে।');location.reload()}catch(e){alert('Local Snapshot restore করা যায়নি: '+e.message)}
+}
+async function updateBackupInfo(){const el=document.getElementById('backupInfo');if(!el)return;try{const idb=await openBackupDB();const tx=idb.transaction(BACKUP_STORE,'readonly'),req=tx.objectStore(BACKUP_STORE).get('latest');req.onsuccess=()=>{const r=req.result;el.innerHTML=r?'শেষ Local Snapshot: <b>'+new Date(r.savedAt).toLocaleString('en-BD')+'</b>':'Local Snapshot এখনো নেই';}}catch(e){el.textContent='Local backup unavailable'}}
+function updateConnectionStatus(){const e=document.getElementById('syncStatus');if(!e)return;e.textContent=navigator.onLine?'● Online — Internet available':'● Offline — POS local data mode';e.style.color=navigator.onLine?'#16803c':'#b45309'}
+window.addEventListener('online',updateConnectionStatus);window.addEventListener('offline',updateConnectionStatus);
+const _saveDBOriginal=saveDB;
+saveDB=function(){const ok=_saveDBOriginal();if(ok){saveLocalSnapshot();}return ok};
+const _downloadBackupOriginal=downloadBackup;
+downloadBackup=function(){try{const payload={app:'New Zara Fashion POS V4',version:3,backupVersion:1,exportedAt:new Date().toISOString(),data:db};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='New_Zara_Fashion_POS_Backup_'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);updateBackupInfo()}catch(e){if(typeof _downloadBackupOriginal==='function')_downloadBackupOriginal()}};
+const _restoreBackupOriginal=restoreBackup;
+restoreBackup=function(){const f=document.getElementById('restoreFile')?.files?.[0];if(!f){alert('আগে একটি JSON Backup file নির্বাচন করুন।');return}const r=new FileReader();r.onload=async()=>{try{const x=JSON.parse(r.result),data=x.data||x;if(!data||!Array.isArray(data.products)||!Array.isArray(data.sales))throw new Error('Invalid POS backup');if(!confirm('Backup restore করলে বর্তমান ডাটা replace হবে। Continue?'))return;db=data;_saveDBOriginal();await saveLocalSnapshot();alert('Backup successfully restored.');location.reload()}catch(e){alert('Invalid/unsupported backup file: '+e.message)}};r.readAsText(f)};
+setTimeout(()=>{updateConnectionStatus();updateBackupInfo();saveLocalSnapshot()},500);
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){navigator.serviceWorker.register('sw.js').catch(e=>console.warn('Offline cache registration failed',e))}
+
+</script>
+</body></html>
