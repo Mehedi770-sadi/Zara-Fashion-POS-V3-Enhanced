@@ -227,7 +227,62 @@ function completeSale(){if(!cart.length){alert('Cart খালি');return}for(l
 function printInvoice(s){let items=s.items.map(x=>`<tr><td>${esc(x.name)}<br>${esc(x.size)} ${esc(x.color||'')}</td><td>${x.qty}</td><td>${money(x.qty*x.price)}</td></tr>`).join('');let total=s.total;printArea.innerHTML=`<div style="font-family:Arial;width:${db.settings.paper}mm;padding:4mm;background:white"><h2 style="text-align:center;margin:0">${esc(db.settings.shop)}</h2><div style="text-align:center;font-size:11px">${esc(db.settings.phone)}<br>${esc(db.settings.address)}</div><hr><div style="font-size:11px">Invoice: ${esc(s.invoice)}<br>Date: ${esc(s.dateText)}<br>Customer: ${esc(s.customer||'Walk-in Customer')}</div><hr><table style="width:100%;font-size:11px;border-collapse:collapse"><tr><th>Item</th><th>Qty</th><th>Total</th></tr>${items}</table><hr><div style="text-align:right;font-size:12px">Total Payable: <b>${money(total)}</b><br>Paid By: ${esc(s.payment)}</div><p style="text-align:center;font-size:11px">Thank You! Visit Again.</p></div>`;window.print();printArea.innerHTML=''}
 function printLabelFromForm(){let code=pCode.value.trim();if(!code){code=generateProductCode();pCode.value=code}let p=db.products.find(x=>x.code===code)||{code,name:pName.value||'Product',price:+pPrice.value||0,size:pSize.value||'',color:pColor.value||''};printLabels([p])}
 function printProductBarcode(code){let p=db.products.find(x=>x.code===code);if(!p){alert('Product পাওয়া যায়নি');return}printLabels([p])}
-function printLabels(arr){let labels=arr.map(p=>`<div class="label"><b>${esc(db.settings.shop)}</b><div>${esc(p.name)}</div><div>Price: ${money(p.price)}</div>${code128SVG(p.code)}<div style="font-weight:700">${esc(p.code)}</div></div>`).join('');let w=window.open('','_blank');w.document.write(`<html><head><title>Barcode Labels</title><style>@page{margin:4mm}.label{width:2.25in;height:1.25in;display:inline-flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border:1px solid #ddd;margin:2px;padding:5px;font-family:Arial;font-size:10px;vertical-align:top}.label svg{width:100%;height:45px}</style></head><body>${labels}<script>window.print()<\/script></body></html>`);w.document.close()}
+function printLabels(arr){let labels=arr.map(p=>`<div class="label"><b>${esc(db.settings.shop)}</b><div>${esc(p.name)}</div><div>Price: ${money(p.price)}</div>${code128SVG(p.code)}<div style="font-weight:700">${esc(p.code)}</div></div>`).join('');let w=window.open('','_blank');w.document.write(`<html><head><title>Barcode Labels</title><style>@page{margin:4mm}.label{width:2.25in;height:1.25in;display:inline-flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border:1px solid #ddd;margin:2px;padding:5px;font-family:Arial;font-size:10px;vertical-align:top}.label svg{width:100%;height:45px}</style></head><body>${labels}<script>window.print()<\/script>
+<!-- Barcode/POS reliability patch -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script>
+function generateProductCode(){
+  db=loadDB();
+  let n=(Number(db.seq)||0)+1, code='NZF-'+String(n).padStart(6,'0');
+  while(db.products.some(p=>p.code===code)){n++;code='NZF-'+String(n).padStart(6,'0')}
+  db.seq=n; pCode.value=code; updateProductBarcodePreview(); saveDB(); return code;
+}
+function code128SVG(code){
+  try{
+    if(typeof JsBarcode==='undefined') return '<div style="font-family:monospace;font-size:22px;letter-spacing:2px">||||||||||||</div>';
+    const ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns,'svg');
+    JsBarcode(svg,String(code||''),{format:'CODE128',displayValue:false,height:48,width:1.5,margin:0});
+    return svg.outerHTML;
+  }catch(e){return '<div style="font-family:monospace">BARCODE</div>'}
+}
+function updateProductBarcodePreview(){
+  const box=document.getElementById('productBarcodePreview'); if(!box)return;
+  const code=(document.getElementById('pCode')?.value||'').trim();
+  box.innerHTML=code ? code128SVG(code)+'<div style="font-weight:700;margin-top:4px">'+esc(code)+'</div>' : 'Barcode preview';
+}
+function clearProductForm(){['pCode','pName','pColor','pCost','pPrice','pStock','pReorder'].forEach(id=>{let e=document.getElementById(id);if(e)e.value=id==='pReorder'?'3':''}); if(document.getElementById('pSize'))pSize.value='S'; refreshCategorySelects(); updateProductBarcodePreview();}
+function saveProduct(){
+  if(currentUser?.role!=='Administrator'){alert('Only Administrator can add/edit products');return}
+  let code=pCode.value.trim()||generateProductCode(), name=pName.value.trim();
+  if(!name){alert('Product Name দিন');return}
+  let existing=db.products.find(p=>p.code===code);
+  let item={code,name,cat:pCat.value||'Others',size:pSize.value||'Free',color:pColor.value.trim(),cost:+pCost.value||0,price:+pPrice.value||0,stock:+pStock.value||0,reorder:+pReorder.value||3};
+  if(existing)Object.assign(existing,item);else db.products.push(item);
+  saveDB(); renderAll(); updateProductBarcodePreview(); alert(existing?'Product updated':'Product added');
+}
+function renderProducts(){
+  const q=(document.getElementById('prodSearch')?.value||'').trim().toLowerCase();
+  const cat=document.getElementById('prodFilter')?.value||'';
+  const arr=db.products.filter(function(p){return (!q||[p.code,p.name,p.color,p.size].some(function(v){return String(v||'').toLowerCase().includes(q)}))&&(!cat||p.cat===cat)});
+  let html='<table><tr><th>Barcode</th><th>Product</th><th>Category</th><th>Size</th><th>Color</th><th>Stock</th><th>Sale Price</th><th>Action</th></tr>';
+  arr.forEach(function(p){
+    html+='<tr><td>'+esc(p.code)+'</td><td>'+esc(p.name)+'</td><td>'+esc(p.cat)+'</td><td>'+esc(p.size)+'</td><td>'+esc(p.color)+'</td><td>'+p.stock+'</td><td>'+money(p.price)+'</td><td><button class="btnlight" onclick="editProduct(\''+String(p.code).replace(/'/g,"\\'")+"\')">Edit</button> <button class=\"btnlight\" onclick=\"printProductBarcode(\'"+String(p.code).replace(/'/g,"\\'")+"\')\">Barcode</button></td></tr>';
+  });
+  html+='</table>'; productTable.innerHTML=html;
+}
+function editProduct(code){let p=db.products.find(x=>x.code===code);if(!p)return;pCode.value=p.code;pName.value=p.name;pCat.value=p.cat;pSize.value=p.size;pColor.value=p.color||'';pCost.value=p.cost;pPrice.value=p.price;pStock.value=p.stock;pReorder.value=p.reorder??3;updateProductBarcodePreview();showPage('products')}
+function scanEnter(e){if(e.key!=='Enter')return; e.preventDefault(); const code=(scan.value||'').trim(); if(!code)return; addByCode(code); scan.value=''; setTimeout(()=>scan.focus(),50)}
+function addManual(){let code=(scan.value||'').trim();if(code){addByCode(code);scan.value='';return}alert('Barcode/Product Code লিখুন');scan.focus()}
+function setQty(i,v){let q=Math.max(1,parseInt(v)||1);if(cart[i])cart[i].qty=q;renderCart()}
+function removeCart(i){cart.splice(i,1);renderCart()}
+function removeSelected(){if(!cart.length)return;cart.pop();renderCart()}
+function clearCart(){cart=[];document.getElementById('scan').value='';renderCart()}
+function newInvoice(){let n=(Number(db.invoiceSeq)||0)+1;db.invoiceSeq=n;let no=document.getElementById('invoiceNo'),dt=document.getElementById('invoiceDate');if(no)no.value='INV-'+String(n).padStart(6,'0');if(dt)dt.value=nowText();saveDB();updateInvoicePreview()}
+function renderAll(){
+  try{ensureDb();refreshCategorySelects();renderProducts();if(typeof renderDashboard==='function')renderDashboard();if(typeof renderPurchases==='function')renderPurchases();if(typeof renderCustomers==='function')renderCustomers();if(typeof renderSuppliers==='function')renderSuppliers();if(typeof renderExpenses==='function')renderExpenses();if(typeof renderReports==='function')renderReports();if(typeof renderStockReports==='function')renderStockReports();renderCart();renderWorkday();applyAppearance()}catch(e){console.warn('renderAll:',e)}
+}
+</script>
+</body></html>`);w.document.close()}
 function addPurchase(){let p=db.products.find(x=>x.code===buyCode.value.trim());if(!p){alert('Product code পাওয়া যায়নি');return}let q=+buyQty.value||0,c=+buyCost.value||p.cost;if(q<=0)return;p.stock+=q;p.cost=c;db.purchases.push({date:today(),code:p.code,name:p.name,qty:q,cost:c,supplier:buySupplier.value,total:q*c});saveDB();renderAll();alert('Stock added')}
 function renderPurchases(){purchaseTable.innerHTML=`<table><tr><th>Date</th><th>Barcode</th><th>Product</th><th>Qty</th><th>Cost</th><th>Supplier</th><th>Total</th></tr>${db.purchases.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${esc(x.code)}</td><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.cost)}</td><td>${esc(x.supplier)}</td><td>${money(x.total)}</td></tr>`).join('')}</table>`}
 function addCategory(){let n=(newCat?.value||prompt('Category name')||'').trim();if(!n)return;if(!db.categories.includes(n))db.categories.push(n);if(newCat)newCat.value='';saveDB();renderAll()}
@@ -366,5 +421,55 @@ restoreBackup=function(){const f=document.getElementById('restoreFile')?.files?.
 setTimeout(()=>{updateConnectionStatus();updateBackupInfo();saveLocalSnapshot()},500);
 if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){navigator.serviceWorker.register('sw.js').catch(e=>console.warn('Offline cache registration failed',e))}
 
+</script>
+
+<!-- Barcode/POS reliability patch -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script>
+function generateProductCode(){
+  db=loadDB();
+  let n=(Number(db.seq)||0)+1, code='NZF-'+String(n).padStart(6,'0');
+  while(db.products.some(p=>p.code===code)){n++;code='NZF-'+String(n).padStart(6,'0')}
+  db.seq=n; pCode.value=code; updateProductBarcodePreview(); saveDB(); return code;
+}
+function code128SVG(code){
+  try{
+    if(typeof JsBarcode==='undefined') return '<div style="font-family:monospace;font-size:22px;letter-spacing:2px">||||||||||||</div>';
+    const ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns,'svg');
+    JsBarcode(svg,String(code||''),{format:'CODE128',displayValue:false,height:48,width:1.5,margin:0});
+    return svg.outerHTML;
+  }catch(e){return '<div style="font-family:monospace">BARCODE</div>'}
+}
+function updateProductBarcodePreview(){
+  const box=document.getElementById('productBarcodePreview'); if(!box)return;
+  const code=(document.getElementById('pCode')?.value||'').trim();
+  box.innerHTML=code ? code128SVG(code)+'<div style="font-weight:700;margin-top:4px">'+esc(code)+'</div>' : 'Barcode preview';
+}
+function clearProductForm(){['pCode','pName','pColor','pCost','pPrice','pStock','pReorder'].forEach(id=>{let e=document.getElementById(id);if(e)e.value=id==='pReorder'?'3':''}); if(document.getElementById('pSize'))pSize.value='S'; refreshCategorySelects(); updateProductBarcodePreview();}
+function saveProduct(){
+  if(currentUser?.role!=='Administrator'){alert('Only Administrator can add/edit products');return}
+  let code=pCode.value.trim()||generateProductCode(), name=pName.value.trim();
+  if(!name){alert('Product Name দিন');return}
+  let existing=db.products.find(p=>p.code===code);
+  let item={code,name,cat:pCat.value||'Others',size:pSize.value||'Free',color:pColor.value.trim(),cost:+pCost.value||0,price:+pPrice.value||0,stock:+pStock.value||0,reorder:+pReorder.value||3};
+  if(existing)Object.assign(existing,item);else db.products.push(item);
+  saveDB(); renderAll(); updateProductBarcodePreview(); alert(existing?'Product updated':'Product added');
+}
+function renderProducts(){
+  const q=(document.getElementById('prodSearch')?.value||'').trim().toLowerCase(), cat=document.getElementById('prodFilter')?.value||'';
+  const arr=db.products.filter(p=>(!q||[p.code,p.name,p.color,p.size].some(v=>String(v||'').toLowerCase().includes(q)))&&(!cat||p.cat===cat));
+  productTable.innerHTML="<table><tr><th>Barcode</th><th>Product</th><th>Category</th><th>Size</th><th>Color</th><th>Stock</th><th>Sale Price</th><th>Action</th></tr>"+arr.map(p=>`<tr><td>${esc(p.code)}</td><td>${esc(p.name)}</td><td>${esc(p.cat)}</td><td>${esc(p.size)}</td><td>${esc(p.color)}</td><td>${p.stock}</td><td>${money(p.price)}</td><td><button class=\"btnlight\" onclick=\"editProduct('${esc(p.code)}')\">Edit</button> <button class=\"btnlight\" onclick=\"printProductBarcode('${esc(p.code)}')\">Barcode</button></td></tr>`).join('')+"</table>";
+}
+function editProduct(code){let p=db.products.find(x=>x.code===code);if(!p)return;pCode.value=p.code;pName.value=p.name;pCat.value=p.cat;pSize.value=p.size;pColor.value=p.color||'';pCost.value=p.cost;pPrice.value=p.price;pStock.value=p.stock;pReorder.value=p.reorder??3;updateProductBarcodePreview();showPage('products')}
+function scanEnter(e){if(e.key!=='Enter')return; e.preventDefault(); const code=(scan.value||'').trim(); if(!code)return; addByCode(code); scan.value=''; setTimeout(()=>scan.focus(),50)}
+function addManual(){let code=(scan.value||'').trim();if(code){addByCode(code);scan.value='';return}alert('Barcode/Product Code লিখুন');scan.focus()}
+function setQty(i,v){let q=Math.max(1,parseInt(v)||1);if(cart[i])cart[i].qty=q;renderCart()}
+function removeCart(i){cart.splice(i,1);renderCart()}
+function removeSelected(){if(!cart.length)return;cart.pop();renderCart()}
+function clearCart(){cart=[];document.getElementById('scan').value='';renderCart()}
+function newInvoice(){let n=(Number(db.invoiceSeq)||0)+1;db.invoiceSeq=n;let no=document.getElementById('invoiceNo'),dt=document.getElementById('invoiceDate');if(no)no.value='INV-'+String(n).padStart(6,'0');if(dt)dt.value=nowText();saveDB();updateInvoicePreview()}
+function renderAll(){
+  try{ensureDb();refreshCategorySelects();renderProducts();if(typeof renderDashboard==='function')renderDashboard();if(typeof renderPurchases==='function')renderPurchases();if(typeof renderCustomers==='function')renderCustomers();if(typeof renderSuppliers==='function')renderSuppliers();if(typeof renderExpenses==='function')renderExpenses();if(typeof renderReports==='function')renderReports();if(typeof renderStockReports==='function')renderStockReports();renderCart();renderWorkday();applyAppearance()}catch(e){console.warn('renderAll:',e)}
+}
 </script>
 </body></html>
