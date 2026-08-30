@@ -60,7 +60,7 @@ async function supabaseLoginV4(email,password){if(!zaraSupabase)return{ok:false,
     <button onclick="doLogin()">Login</button>
     <div id="loginMsg" class="loginmsg"></div>
     <div id="connectionHint" class="muted" style="text-align:center">
-Login with your Supabase email and password
+Admin Login: admin / admin123 &nbsp; | &nbsp; Staff Login: staff / staff123
 </div>
 <script>
 (function(){
@@ -221,19 +221,7 @@ function esc(x){return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 function money(n){return '৳ '+Number(n||0).toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function today(){return new Date().toISOString().slice(0,10)}
 function nowText(){return new Date().toLocaleString('en-GB')}
-async function doLogin(){try{
-  db=loadDB();
-  const login=(loginUserEl()?.value||'').trim(), password=loginPassEl()?.value||'';
-  if(!login||!password){loginMsgEl().textContent='Username/Email এবং Password দিন';return false}
-  const localUser=(db.users||[]).find(a=>String(a.u).toLowerCase()===login.toLowerCase() && String(a.p)===password);
-  if(localUser){currentUser={...localUser};loginEl().style.display='none';appEl().style.display='block';$('userRole').textContent=currentUser.role;$('userName').textContent=currentUser.u;init();showPage('dashboard');return true}
-  if(login.includes('@')){
-    const result=await supabaseLoginV4(login,password);
-    if(result.ok){currentUser={u:result.user.email,role:'Administrator',email:result.user.email};loginEl().style.display='none';appEl().style.display='block';$('userRole').textContent=currentUser.role;$('userName').textContent=currentUser.u;init();showPage('dashboard');return true}
-    loginMsgEl().textContent=(result.error==='Failed to fetch'?'Connection failed. Check internet and open this V4 from HTTPS/GitHub Pages.':'Login failed: '+result.error);return false;
-  }
-  loginMsgEl().textContent='ভুল Username বা Password';return false;
-}catch(e){console.error(e);loginMsgEl().textContent='Login error: '+e.message;return false}}
+async function doLogin(){try{db=loadDB();const username=(loginUserEl()?.value||'').trim(),password=loginPassEl()?.value||'';if(!username||!password){loginMsgEl().textContent='Username এবং Password দিন';return false}const localUser=(db.users||[]).find(a=>String(a.u)===username && String(a.p)===password);if(localUser){currentUser={...localUser,email:null};loginEl().style.display='none';appEl().style.display='block';$('userRole').textContent=currentUser.role;$('userName').textContent=currentUser.u;init();showPage('dashboard');return true}const result=await supabaseLoginV4(username,password);if(!result.ok){loginMsgEl().textContent=(result.error==='Failed to fetch' ? 'Connection failed. Please open V4 from GitHub Pages/HTTPS.' : 'Login failed: '+result.error);return false}currentUser={u:username,role:'Administrator',email:result.user.email};loginEl().style.display='none';appEl().style.display='block';$('userRole').textContent=currentUser.role;$('userName').textContent=currentUser.u;init();showPage('dashboard');return true}catch(e){console.error(e);loginMsgEl().textContent='Login error: '+e.message;return false}}
 function updateInvoicePreview(){let gross=cart.reduce((a,x)=>a+x.qty*x.price,0),dis=+saleDiscount.value||0,total=Math.max(0,gross-dis);invoicePreview.innerHTML=`<h3>${esc(db.settings.shop)}</h3><p>All Kinds of Ladies & Gents Item</p><p>${esc(db.settings.phone)}<br>${esc(db.settings.address)}</p><hr><div style="font-size:11px">Invoice: ${esc(invoiceNo?.value||'')}<br>Date: ${esc(invoiceDate?.value||'')}<br>Customer: ${esc(saleCustomer?.selectedOptions[0]?.text||'Walk-in Customer')}</div><hr><table><tr><th>Item</th><th>Qty</th><th>Total</th></tr>${cart.map(x=>`<tr><td>${esc(x.name)} (${esc(x.size)})</td><td>${x.qty}</td><td>${money(x.qty*x.price)}</td></tr>`).join('')}</table><hr><div class="sumrow"><span>Subtotal</span><b>${money(gross)}</b></div><div class="sumrow"><span>Discount</span><b>${money(dis)}</b></div><div class="sumrow grand"><span>Total</span><span>${money(total)}</span></div><hr><p>Paid By: ${esc(selectedPay)}</p><p>Thank You! Visit Again.</p>`}
 function completeSale(){if(!cart.length){alert('Cart খালি');return}for(let x of cart){let p=db.products.find(p=>p.code===x.code);if(!p||x.qty>p.stock){alert(x.name+' এর পর্যাপ্ত stock নেই');return}}let gross=cart.reduce((a,x)=>a+x.qty*x.price,0),dis=+saleDiscount.value||0,total=Math.max(0,gross-dis),profit=cart.reduce((a,x)=>a+x.qty*(x.price-x.cost),0)-dis;cart.forEach(x=>db.products.find(p=>p.code===x.code).stock-=x.qty);let s={invoice:invoiceNo.value,date:today(),dateText:invoiceDate.value,customer:saleCustomer.value||'',payment:selectedPay,total,profit,items:cart.map(x=>({code:x.code,name:x.name,size:x.size,color:x.color,qty:x.qty,price:x.price}))};db.sales.push(s);saveDB();printInvoice(s);cart=[];saleDiscount.value=0;newInvoice();renderAll()}
 function printInvoice(s){let items=s.items.map(x=>`<tr><td>${esc(x.name)}<br>${esc(x.size)} ${esc(x.color||'')}</td><td>${x.qty}</td><td>${money(x.qty*x.price)}</td></tr>`).join('');let total=s.total;printArea.innerHTML=`<div style="font-family:Arial;width:${db.settings.paper}mm;padding:4mm;background:white"><h2 style="text-align:center;margin:0">${esc(db.settings.shop)}</h2><div style="text-align:center;font-size:11px">${esc(db.settings.phone)}<br>${esc(db.settings.address)}</div><hr><div style="font-size:11px">Invoice: ${esc(s.invoice)}<br>Date: ${esc(s.dateText)}<br>Customer: ${esc(s.customer||'Walk-in Customer')}</div><hr><table style="width:100%;font-size:11px;border-collapse:collapse"><tr><th>Item</th><th>Qty</th><th>Total</th></tr>${items}</table><hr><div style="text-align:right;font-size:12px">Total Payable: <b>${money(total)}</b><br>Paid By: ${esc(s.payment)}</div><p style="text-align:center;font-size:11px">Thank You! Visit Again.</p></div>`;window.print();printArea.innerHTML=''}
