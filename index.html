@@ -136,7 +136,7 @@ Admin Login: admin / admin123 &nbsp; | &nbsp; Staff Login: staff / staff123
 <div class="posleft">
 <div class="panel">
 <label>Scan Barcode / Search Product</label>
-<input id="scan" placeholder="Scan barcode or type product code" onkeydown="scanEnter(event)" autofocus>
+<div class="row" style="align-items:stretch"><div style="flex:1;min-width:220px"><input id="scan" list="posProductSuggestions" placeholder="Scan barcode / type code / product name" onkeydown="scanEnter(event)" autocomplete="off" autofocus><datalist id="posProductSuggestions"></datalist></div><button class="btnblue" type="button" onclick="addManual()">🔎 Search / Add</button></div><div id="posSearchResults" class="search-results" style="margin-top:8px"></div>
 <!-- Product details are intentionally hidden in POS Sale; barcode/code search remains available. -->
 </div>
 <div class="panel"><h3>Invoice Items</h3><div class="scroll"><table><thead><tr><th>SL</th><th>Product Name</th><th>Size</th><th>Color</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr></thead><tbody id="cartBody"></tbody></table></div>
@@ -429,5 +429,85 @@ function clearCart(){cart=[];document.getElementById('scan').value='';renderCart
 function newInvoice(){let n=(Number(db.invoiceSeq)||0)+1;db.invoiceSeq=n;let no=document.getElementById('invoiceNo'),dt=document.getElementById('invoiceDate');if(no)no.value='INV-'+String(n).padStart(6,'0');if(dt)dt.value=nowText();saveDB();updateInvoicePreview()}
 function renderAll(){try{ensureDb();refreshCategorySelects();renderProducts();if(typeof renderDashboard==='function')renderDashboard();if(typeof renderPurchases==='function')renderPurchases();if(typeof renderCustomers==='function')renderCustomers();if(typeof renderSuppliers==='function')renderSuppliers();if(typeof renderExpenses==='function')renderExpenses();if(typeof renderReports==='function')renderReports();if(typeof renderStockReports==='function')renderStockReports();renderCart();renderWorkday();applyAppearance()}catch(e){console.warn('renderAll:',e)}}
 
+
+/* ===== FINAL V4 reliability overrides ===== */
+function norm(v){return String(v??'').trim().toLowerCase();}
+function normalizeCode(v){return norm(v).replace(/\s+/g,'');}
+function findProducts(query){
+  const q=norm(query);
+  if(!q) return [];
+  const nq=normalizeCode(q);
+  return (db.products||[]).filter(p=>{
+    const code=normalizeCode(p.code), name=norm(p.name), color=norm(p.color), size=norm(p.size), cat=norm(p.cat);
+    return code===nq || code.includes(nq) || name.includes(q) || color.includes(q) || size.includes(q) || cat.includes(q);
+  }).sort((a,b)=>{
+    const ac=normalizeCode(a.code),bc=normalizeCode(b.code);
+    const as=ac===nq?0:(norm(a.name)===q?1:2), bs=bc===nq?0:(norm(b.name)===q?1:2);
+    return as-bs;
+  });
+}
+function refreshPosSuggestions(){
+  const dl=document.getElementById('posProductSuggestions'); if(!dl)return;
+  dl.innerHTML=(db.products||[]).slice(0,500).map(p=>`<option value="${esc(p.code)}">${esc(p.name)} — ${esc(p.size||'')} ${esc(p.color||'')}</option>`).join('');
+}
+function showPosSearchResults(query){
+  const box=document.getElementById('posSearchResults'); if(!box)return;
+  const arr=findProducts(query).slice(0,8);
+  if(!query){box.innerHTML='';return;}
+  box.innerHTML=arr.length?arr.map((p,i)=>`<div class="search-result"><div><b>${esc(p.name)}</b><br><small>${esc(p.code)} • ${esc(p.size||'Free')} • ${esc(p.color||'')} • Stock: ${p.stock} • ${money(p.price)}</small></div><button class="btnblue" type="button" onclick="addFoundProduct(${i})">Add</button></div>`).join(''):`<div class="empty">Product পাওয়া যায়নি: ${esc(query)}</div>`;
+  window.__posSearchMatches=arr;
+}
+function addFoundProduct(i){const p=window.__posSearchMatches?.[i];if(!p)return;addByProduct(p);const s=document.getElementById('scan');if(s){s.value='';s.focus()}showPosSearchResults('');}
+function addByProduct(p){
+  if(!p){alert('Product পাওয়া যায়নি');return false;}
+  if(Number(p.stock||0)<=0){alert(`${p.name} এর stock নেই`);return false;}
+  const info=[['infoName',p.name],['infoCat',p.cat],['infoSize',p.size],['infoColor',p.color],['infoStock',p.stock],['infoPrice',p.price]];
+  info.forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.value=v??'';});
+  const x=cart.find(i=>normalizeCode(i.code)===normalizeCode(p.code));
+  if(x){if(x.qty>=Number(p.stock||0)){alert('এই product-এর available stock শেষ');return false;}x.qty++;}
+  else cart.push({...p,qty:1,selected:false});
+  renderCart();
+  return true;
+}
+function addByCode(query){
+  db=loadDB(); ensureDb();
+  const arr=findProducts(query);
+  if(!arr.length){showPosSearchResults(query);alert('Product পাওয়া যায়নি: '+query);return false;}
+  if(arr.length===1){showPosSearchResults('');return addByProduct(arr[0]);}
+  showPosSearchResults(query);
+  return false;
+}
+function scanEnter(e){
+  if(e.key!=='Enter')return; e.preventDefault();
+  const code=(document.getElementById('scan')?.value||'').trim(); if(!code)return;
+  addByCode(code);
+  const matches=findProducts(code);
+  if(matches.length===1){document.getElementById('scan').value='';setTimeout(()=>document.getElementById('scan')?.focus(),50);}
+}
+function addManual(){
+  const el=document.getElementById('scan'); const q=(el?.value||'').trim();
+  if(!q){alert('Barcode, Product Code অথবা Product Name লিখুন');el?.focus();return;}
+  const ok=addByCode(q);
+  if(ok&&el){el.value='';el.focus();}
+}
+function renderProducts(){
+  const q=norm(document.getElementById('prodSearch')?.value),cat=document.getElementById('prodFilter')?.value||'';
+  const arr=(db.products||[]).filter(p=>(!q||[p.code,p.name,p.color,p.size,p.cat].some(v=>norm(v).includes(q)))&&(!cat||p.cat===cat));
+  const box=document.getElementById('productTable'); if(!box)return;
+  let html='<table><tr><th>Barcode</th><th>Product</th><th>Category</th><th>Size</th><th>Color</th><th>Stock</th><th>Sale Price</th><th>Action</th></tr>';
+  arr.forEach(p=>{const code=String(p.code||'').replace(/'/g,"\\'");html+=`<tr><td>${esc(p.code)}</td><td>${esc(p.name)}</td><td>${esc(p.cat)}</td><td>${esc(p.size)}</td><td>${esc(p.color)}</td><td>${p.stock}</td><td>${money(p.price)}</td><td><button class="btnlight" onclick="editProduct('${code}')">Edit</button> <button class="btnlight" onclick="printProductBarcode('${code}')">Barcode</button></td></tr>`});
+  box.innerHTML=html+'</table>';
+}
+function saveProduct(){
+  if(currentUser?.role!=='Administrator'){alert('Only Administrator can add/edit products');return;}
+  let code=(document.getElementById('pCode')?.value||'').trim(); if(!code)code=generateProductCode();
+  const name=(document.getElementById('pName')?.value||'').trim(); if(!name){alert('Product Name দিন');return;}
+  const existing=db.products.find(p=>normalizeCode(p.code)===normalizeCode(code));
+  const item={code,name,cat:document.getElementById('pCat')?.value||'Others',size:document.getElementById('pSize')?.value||'Free',color:(document.getElementById('pColor')?.value||'').trim(),cost:+document.getElementById('pCost')?.value||0,price:+document.getElementById('pPrice')?.value||0,stock:Math.max(0,+document.getElementById('pStock')?.value||0),reorder:Math.max(0,+document.getElementById('pReorder')?.value||3)};
+  if(existing)Object.assign(existing,item);else db.products.push(item);
+  saveDB();refreshPosSuggestions();renderAll();updateProductBarcodePreview();alert(existing?'Product updated':'Product added');
+}
+function init(){ensureDb();loadSettingsEnhanced();refreshCategorySelects();renderAll();renderSettingsCategories();renderMainMenu();renderWorkday();refreshPosSuggestions();const staff=currentUser?.role!=='Administrator';['side-products','side-purchase','side-categories','side-suppliers','top-products','top-purchase','top-settings','side-settings'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=staff?'none':''});}
+document.addEventListener('input',e=>{if(e.target?.id==='scan')showPosSearchResults(e.target.value);});
 </script>
 </body></html>
