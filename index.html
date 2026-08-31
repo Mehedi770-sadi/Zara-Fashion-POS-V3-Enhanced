@@ -387,49 +387,5 @@ restoreBackup=function(){const f=document.getElementById('restoreFile')?.files?.
 setTimeout(()=>{updateConnectionStatus();updateBackupInfo();saveLocalSnapshot()},500);
 if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){navigator.serviceWorker.register('sw.js').catch(e=>console.warn('Offline cache registration failed',e))}
 
-/* ===== POS Quantity +/- controls ===== */
-function changeCartQty(i, delta){
-  if(!cart[i]) return;
-  const p=db.products.find(x=>x.code===cart[i].code);
-  const maxStock=p ? Number(p.stock)||0 : Infinity;
-  const next=Math.max(1, Number(cart[i].qty||1)+Number(delta||0));
-  if(next>maxStock){
-    alert('এই Product-এর stock মাত্র '+maxStock+' টি আছে।');
-    return;
-  }
-  cart[i].qty=next;
-  renderCart();
-}
-function setQty(i,v){
-  if(!cart[i]) return;
-  const p=db.products.find(x=>x.code===cart[i].code);
-  const maxStock=p ? Number(p.stock)||0 : Infinity;
-  let q=Math.max(1, parseInt(v,10)||1);
-  if(q>maxStock){q=maxStock; alert('এই Product-এর stock মাত্র '+maxStock+' টি আছে।');}
-  if(q<1)q=1;
-  cart[i].qty=q;
-  renderCart();
-}
-function renderCart(){
-  cartBody.innerHTML=cart.length?cart.map((x,i)=>`<tr>
-    <td>${i+1}</td>
-    <td>${esc(x.code)}</td>
-    <td>${esc(x.name)}</td>
-    <td>${esc(x.size)}</td>
-    <td>${esc(x.color)}</td>
-    <td>${money(x.price)}</td>
-    <td>
-      <div style="display:flex;align-items:center;justify-content:center;gap:5px;min-width:125px">
-        <button type="button" class="btnlight" style="min-width:38px;padding:7px 10px;font-size:18px;font-weight:700" onclick="changeCartQty(${i},-1)">−</button>
-        <span style="min-width:30px;text-align:center;font-weight:700;font-size:16px">${x.qty}</span>
-        <button type="button" class="btnblue" style="min-width:38px;padding:7px 10px;font-size:18px;font-weight:700" onclick="changeCartQty(${i},1)">+</button>
-      </div>
-    </td>
-    <td>${money(x.qty*x.price)}</td>
-    <td><button type="button" class="btnred" onclick="removeCart(${i})">X</button></td>
-  </tr>`).join(''):'<tr><td colspan="9" class="empty">No items added</td></tr>';
-  updatePaymentSummary();
-}
-
 </script>
 </body></html>
