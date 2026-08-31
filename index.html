@@ -508,6 +508,33 @@ function saveProduct(){
   saveDB();refreshPosSuggestions();renderAll();updateProductBarcodePreview();alert(existing?'Product updated':'Product added');
 }
 function init(){ensureDb();loadSettingsEnhanced();refreshCategorySelects();renderAll();renderSettingsCategories();renderMainMenu();renderWorkday();refreshPosSuggestions();const staff=currentUser?.role!=='Administrator';['side-products','side-purchase','side-categories','side-suppliers','top-products','top-purchase','top-settings','side-settings'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=staff?'none':''});}
-document.addEventListener('input',e=>{if(e.target?.id==='scan')showPosSearchResults(e.target.value);});
+let __scanAutoTimer=null;
+let __lastAutoCode='';
+function autoAddExactCode(){
+  const el=document.getElementById('scan');
+  if(!el)return;
+  const q=(el.value||'').trim();
+  if(!q){__lastAutoCode='';showPosSearchResults('');return;}
+  const nq=normalizeCode(q);
+  const matches=(db.products||[]).filter(p=>normalizeCode(p.code)===nq);
+  showPosSearchResults(q);
+  if(matches.length!==1)return;
+  if(__lastAutoCode===nq)return;
+  __lastAutoCode=nq;
+  const added=addByProduct(matches[0]);
+  if(added){
+    el.value='';
+    showPosSearchResults('');
+    setTimeout(()=>{el.focus();},30);
+  } else {
+    setTimeout(()=>{__lastAutoCode='';},300);
+  }
+}
+document.addEventListener('input',e=>{
+  if(e.target?.id!=='scan')return;
+  showPosSearchResults(e.target.value);
+  clearTimeout(__scanAutoTimer);
+  __scanAutoTimer=setTimeout(autoAddExactCode,180);
+});
 </script>
 </body></html>
